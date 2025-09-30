@@ -14,9 +14,14 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password, requestAdminAccess, adminRequestReason } = req.body
 
-  console.log("Registration attempt:", { name, email, passwordLength: password?.length })
+  console.log("Registration attempt:", { 
+    name, 
+    email, 
+    passwordLength: password?.length,
+    requestAdminAccess: !!requestAdminAccess 
+  })
 
   if (!name || !email || !password) {
     res.status(400)
@@ -53,13 +58,28 @@ export const registerUser = asyncHandler(async (req, res) => {
       role: user.role 
     })
 
+    // Handle admin access request if requested during registration
+    if (requestAdminAccess && adminRequestReason) {
+      try {
+        user.requestAdminAccess(adminRequestReason)
+        await user.save()
+        console.log("Admin access requested during registration")
+      } catch (error) {
+        console.log("Failed to request admin access during registration:", error.message)
+      }
+    }
+
     if (user) {
       res.status(201).json({
         _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
+        adminRequest: user.adminRequest,
         token: generateToken(user._id),
+        message: requestAdminAccess ? 
+          "Account created successfully. Your admin access request has been submitted for review." :
+          "Account created successfully."
       })
     } else {
       res.status(400)
@@ -82,11 +102,34 @@ export const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email })
 
   if (user && (await bcrypt.compare(password, user.password))) {
+    // Check if user is authorized for their role
+    if (!user.isAuthorizedForRole()) {
+      let errorMessage = "Account access denied"
+      
+      if (user.role === 'admin') {
+        if (user.adminRequest.status === 'pending') {
+          errorMessage = "Your admin access request is pending approval from a superadmin"
+        } else if (user.adminRequest.status === 'rejected') {
+          errorMessage = `Your admin access request was rejected: ${user.adminRequest.adminMessage || 'No reason provided'}`
+        } else {
+          errorMessage = "Admin access not approved. Please request admin access first."
+        }
+      }
+      
+      res.status(403)
+      throw new Error(errorMessage)
+    }
+
+    // Update last login
+    user.lastLogin = new Date()
+    await user.save()
+
     res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      adminRequest: user.adminRequest,
       token: generateToken(user._id),
     })
   } else {

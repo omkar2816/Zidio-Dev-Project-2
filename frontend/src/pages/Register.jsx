@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { register, reset } from "../store/slices/authSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import toast from "react-hot-toast"
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader, FiUserPlus } from "react-icons/fi"
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader, FiUserPlus, FiShield } from "react-icons/fi"
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -12,6 +12,8 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    requestAdminAccess: false,
+    adminRequestReason: "",
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -45,10 +47,17 @@ function Register() {
       return
     }
 
+    if (formData.requestAdminAccess && !formData.adminRequestReason.trim()) {
+      toast.error("Please provide a reason for requesting admin access")
+      return
+    }
+
     const userData = {
       name: formData.name,
       email: formData.email,
       password: formData.password,
+      requestAdminAccess: formData.requestAdminAccess,
+      adminRequestReason: formData.adminRequestReason,
     }
 
     dispatch(register(userData))
@@ -153,6 +162,43 @@ function Register() {
                   {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                 </button>
               </div>
+            </div>
+
+            {/* Admin Request Section */}
+            <div className="space-y-4 p-4 bg-theme-bg-secondary rounded-xl border border-theme-border">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="requestAdminAccess"
+                  name="requestAdminAccess"
+                  checked={formData.requestAdminAccess}
+                  onChange={(e) => setFormData({ ...formData, requestAdminAccess: e.target.checked })}
+                  className="w-4 h-4 text-primary-600 bg-theme-bg border-theme-border rounded focus:ring-primary-500 focus:ring-2"
+                />
+                <label htmlFor="requestAdminAccess" className="text-sm font-medium text-theme-text cursor-pointer">
+                  Request Admin Access
+                </label>
+              </div>
+              
+              {formData.requestAdminAccess && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-theme-text">
+                    Why do you need admin access? <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="adminRequestReason"
+                    value={formData.adminRequestReason}
+                    onChange={handleChange}
+                    required={formData.requestAdminAccess}
+                    className="input-modern w-full min-h-[80px] resize-none"
+                    placeholder="Please explain why you need admin privileges..."
+                    maxLength="500"
+                  />
+                  <p className="text-xs text-theme-text-secondary">
+                    Your request will be reviewed by a superadmin. Please provide a clear reason.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}

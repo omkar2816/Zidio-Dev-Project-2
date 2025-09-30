@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js"
 import blogRoutes from "./routes/blogRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js"
+import adminRequestRoutes from "./routes/adminRequestRoutes.js"
 import { errorHandler } from "./middleware/errorMiddleware.js"
 
 dotenv.config()
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes)
 app.use("/api/blogs", blogRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/admin", adminRoutes)
+app.use("/api/admin-request", adminRequestRoutes)
 
 // Health check
 app.get("/", (req, res) => {

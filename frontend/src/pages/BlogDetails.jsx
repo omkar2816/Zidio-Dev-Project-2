@@ -5,7 +5,7 @@ import { getBlog, deleteBlog } from "../store/slices/blogSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import blogService from "../services/blogService"
 import toast from "react-hot-toast"
-import { FiHeart, FiEdit, FiTrash2, FiUser, FiCalendar, FiClock, FiEye, FiShare2 } from "react-icons/fi"
+import { FiHeart, FiEdit, FiTrash2, FiUser, FiCalendar, FiClock, FiEye, FiShare2, FiCheck, FiX } from "react-icons/fi"
 
 function BlogDetails() {
   const { id } = useParams()
@@ -19,6 +19,8 @@ function BlogDetails() {
   const [liked, setLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(0)
   const [comments, setComments] = useState([])
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editingCommentText, setEditingCommentText] = useState("")
 
   useEffect(() => {
     dispatch(getBlog(id))
@@ -63,6 +65,41 @@ function BlogDetails() {
     } catch (error) {
       toast.error("Failed to add comment")
     }
+  }
+
+  const handleEditComment = (commentIndex, commentText) => {
+    setEditingCommentId(commentIndex)
+    setEditingCommentText(commentText)
+  }
+
+  const handleUpdateComment = async (commentIndex) => {
+    try {
+      const updatedComments = [...comments]
+      updatedComments[commentIndex].text = editingCommentText
+      setComments(updatedComments)
+      setEditingCommentId(null)
+      setEditingCommentText("")
+      toast.success("Comment updated!")
+    } catch (error) {
+      toast.error("Failed to update comment")
+    }
+  }
+
+  const handleDeleteComment = async (commentIndex) => {
+    if (window.confirm("Are you sure you want to delete this comment?")) {
+      try {
+        const updatedComments = comments.filter((_, index) => index !== commentIndex)
+        setComments(updatedComments)
+        toast.success("Comment deleted!")
+      } catch (error) {
+        toast.error("Failed to delete comment")
+      }
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null)
+    setEditingCommentText("")
   }
 
   const handleDelete = async () => {
@@ -156,17 +193,17 @@ function BlogDetails() {
                 </div>
 
                 {isAuthor && (
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-3">
                     <Link
                       to={`/edit/${blog._id}`}
-                      className="btn-secondary flex items-center space-x-2 text-sm"
+                      className="btn-secondary flex items-center space-x-2 text-sm px-4 py-2"
                     >
                       <FiEdit className="w-4 h-4" />
                       <span>Edit</span>
                     </Link>
                     <button 
                       onClick={handleDelete} 
-                      className="btn-ghost text-red-500 hover:text-red-600 flex items-center space-x-2 text-sm"
+                      className="btn-ghost text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2 text-sm px-4 py-2"
                     >
                       <FiTrash2 className="w-4 h-4" />
                       <span>Delete</span>
@@ -248,21 +285,29 @@ function BlogDetails() {
           </h2>
 
           {user ? (
-            <form onSubmit={handleComment} className="space-y-4">
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your thoughts on this blog post..."
-                className="input-modern min-h-[100px] resize-none"
-                rows="3"
-                required
-              />
-              <button
-                type="submit"
-                className="btn-primary flex items-center space-x-2"
-              >
-                <span>Post Comment</span>
-              </button>
+            <form onSubmit={handleComment} className="space-y-5">
+              <div className="space-y-2">
+                <label htmlFor="comment" className="block text-sm font-medium text-theme-text">
+                  Add your comment
+                </label>
+                <textarea
+                  id="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your thoughts on this blog post..."
+                  className="input-modern min-h-[120px] resize-none w-full text-base leading-relaxed"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div className="flex justify-start">
+                <button
+                  type="submit"
+                  className="btn-primary flex items-center space-x-2 px-6 py-3 font-medium"
+                >
+                  <span>Post Comment</span>
+                </button>
+              </div>
             </form>
           ) : (
             <div className="text-center py-8 space-y-4">
@@ -277,17 +322,73 @@ function BlogDetails() {
             {comments.length > 0 ? (
               comments.map((comment, index) => (
                 <div key={index} className="border-b border-theme-border pb-4 last:border-b-0">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white text-sm font-medium">
-                      {comment.user?.name?.charAt(0).toUpperCase()}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white text-sm font-medium">
+                        {comment.user?.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-theme-text">{comment.user?.name}</span>
+                        <span className="text-theme-text-secondary text-sm">•</span>
+                        <span className="text-theme-text-secondary text-sm">{formatDate(comment.createdAt)}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-theme-text">{comment.user?.name}</span>
-                      <span className="text-theme-text-secondary text-sm">•</span>
-                      <span className="text-theme-text-secondary text-sm">{formatDate(comment.createdAt)}</span>
-                    </div>
+                    
+                    {/* Comment Actions - Show only if user is comment author */}
+                    {user && comment.user?._id === user._id && (
+                      <div className="flex items-center space-x-2">
+                        {editingCommentId === index ? (
+                          <>
+                            <button
+                              onClick={() => handleUpdateComment(index)}
+                              className="text-green-500 hover:text-green-600 p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200"
+                              title="Save changes"
+                            >
+                              <FiCheck className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="text-gray-500 hover:text-gray-600 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
+                              title="Cancel editing"
+                            >
+                              <FiX className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEditComment(index, comment.text)}
+                              className="text-blue-500 hover:text-blue-600 p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200"
+                              title="Edit comment"
+                            >
+                              <FiEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteComment(index)}
+                              className="text-red-500 hover:text-red-600 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                              title="Delete comment"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-theme-text-secondary leading-relaxed ml-11">{comment.text}</p>
+                  
+                  {/* Comment Content - Editable if in edit mode */}
+                  <div className="ml-11">
+                    {editingCommentId === index ? (
+                      <textarea
+                        value={editingCommentText}
+                        onChange={(e) => setEditingCommentText(e.target.value)}
+                        className="input-modern w-full min-h-[80px] resize-none text-sm"
+                        rows="3"
+                      />
+                    ) : (
+                      <p className="text-theme-text-secondary leading-relaxed">{comment.text}</p>
+                    )}
+                  </div>
                 </div>
               ))
             ) : (

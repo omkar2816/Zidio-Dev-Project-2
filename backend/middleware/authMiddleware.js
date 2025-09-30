@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken"
 import asyncHandler from "express-async-handler"
 import User from "../models/User.js"
 
+// Middleware to protect routes
 export const protect = asyncHandler(async (req, res, next) => {
   let token
 
@@ -19,13 +20,21 @@ export const protect = asyncHandler(async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-      // Get user from token
+      // Get user from token and check if active
       req.user = await User.findById(decoded.id).select("-password")
 
       if (!req.user) {
         res.status(401)
         throw new Error("Not authorized, user not found")
       }
+
+      if (!req.user.isActive) {
+        res.status(401)
+        throw new Error("Account is inactive")
+      }
+
+      // Update last login
+      await User.findByIdAndUpdate(decoded.id, { lastLogin: new Date() })
 
       next()
     } catch (error) {
@@ -54,3 +63,106 @@ export const admin = (req, res, next) => {
     throw new Error("Not authorized as admin")
   }
 }
+
+// Role-based authorization middleware
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      res.status(401)
+      throw new Error("Not authorized")
+    }
+
+    if (!roles.includes(req.user.role)) {
+      res.status(403)
+      throw new Error("Not authorized for this resource")
+    }
+
+    next()
+  }
+}
+
+// Admin authorization (admin and superadmin with proper approval)
+export const authorizeAdmin = asyncHandler(async (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    res.status(401)
+    throw new Error('Not authorized - no user found')
+  }
+
+  const user = await User.findById(req.user.id)
+  if (!user) {
+    res.status(401)
+    throw new Error('Not authorized - user not found')
+  }
+
+  // Check if user is authorized for their role
+  if (!user.isAuthorizedForRole()) {
+    res.status(403)
+    throw new Error('Admin access not approved - please contact a superadmin')
+  }
+
+  if (user.role === 'admin' || user.role === 'superadmin') {
+    next()
+  } else {
+    res.status(403)
+    throw new Error('Not authorized - admin access required')
+  }
+})
+
+// Superadmin authorization
+export const authorizeSuperAdmin = asyncHandler(async (req, res, next) => {
+  if (!req.user) {
+    res.status(401)
+    throw new Error("Not authorized")
+  }
+
+  if (req.user.role !== 'superadmin') {
+    res.status(403)
+    throw new Error("Superadmin access required")
+  }
+
+  next()
+})
+
+// Check if user can manage target user
+// Authorize user management (admin or superadmin with proper permissions)
+export const authorizeUserManagement = asyncHandler(async (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    res.status(401)
+    throw new Error('Not authorized - no user found')
+  }
+
+  const user = await User.findById(req.user.id)
+  if (!user) {
+    res.status(401)
+    throw new Error('Not authorized - user not found')
+  }
+
+  if (user.role === 'admin' || user.role === 'superadmin') {
+    next()
+  } else {
+    res.status(403)
+    throw new Error('Not authorized - insufficient privileges')
+  }
+})
+
+// Authorize regular user (not admin or superadmin)
+export const authorizeUser = asyncHandler(async (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    res.status(401)
+    throw new Error('Not authorized - no user found')
+  }
+
+  const user = await User.findById(req.user.id)
+  if (!user) {
+    res.status(401)
+    throw new Error('Not authorized - user not found')
+  }
+
+  // Allow regular users and also users with pending admin requests
+  if (user.role === 'user' || (user.role === 'admin' && user.adminRequest.status !== 'approved')) {
+    next()
+  } else {
+    res.status(403)
+    throw new Error('This action is only available to regular users')
+  }
+})

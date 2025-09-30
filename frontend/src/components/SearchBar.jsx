@@ -146,7 +146,7 @@ function SearchBar({ onSearch, onFilter }) {
               }
             }}
             className="input-modern pl-12 pr-4 w-full"
-            style={{ height: '56px' }}
+            style={{ height: '48px' }}
             autoComplete="off"
           />
           
@@ -179,7 +179,7 @@ function SearchBar({ onSearch, onFilter }) {
             type="submit" 
             disabled={isSearching}
             className="btn-primary px-8 whitespace-nowrap group min-w-[120px] text-lg font-medium flex items-center justify-center disabled:opacity-50"
-            style={{ height: '56px' }}
+            style={{ height: '48px' }}
           >
             {isSearching ? (
               <>
@@ -198,9 +198,9 @@ function SearchBar({ onSearch, onFilter }) {
             type="button"
             onClick={() => setShowFilters(!showFilters)}
             className={`btn-secondary px-6 group flex items-center justify-center ${showFilters ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' : ''}`}
-            style={{ height: '56px' }}
+            style={{ height: '48px' }}
           >
-            <FiFilter className="group-hover:scale-110 transition-transform duration-200" />
+            <FiFilter className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
           </button>
         </div>
       </form>
