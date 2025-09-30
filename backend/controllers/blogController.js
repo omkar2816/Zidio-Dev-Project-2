@@ -1,149 +1,66 @@
 import asyncHandler from "express-async-handler"
 import Blog from "../models/Blog.js"
-import Category from "../models/Category.js"
-import Comment from "../models/Comment.js"
-import Like from "../models/Like.js"
 
 // @desc    Get all blogs
 // @route   GET /api/blogs
 // @access  Public
 export const getBlogs = asyncHandler(async (req, res) => {
-  const { 
-    search, 
-    category, 
-    author, 
-    status = 'published',
-    featured,
-    page = 1, 
-    limit = 10,
-    sort = '-publishedAt'
-  } = req.query
+  const { search, category, author } = req.query
 
-  const query = { status }
+  const query = {}
 
   if (search) {
-    query.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { content: { $regex: search, $options: "i" } },
-      { tags: { $in: [new RegExp(search, "i")] } }
-    ]
+    query.$or = [{ title: { $regex: search, $options: "i" } }, { tags: { $in: [new RegExp(search, "i")] } }]
   }
 
   if (category) {
-    // Handle both category ID and slug
-    const categoryDoc = await Category.findOne({
-      $or: [{ _id: category }, { slug: category }]
-    })
-    if (categoryDoc) {
-      query.category = categoryDoc._id
-    }
+    query.category = category
   }
 
   if (author) {
     query.author = author
   }
 
-  if (featured !== undefined) {
-    query.featured = featured === 'true'
-  }
+  const blogs = await Blog.find(query).populate("author", "name email").sort({ createdAt: -1 })
 
-  const blogs = await Blog.find(query)
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
-    .populate("likeCount")
-    .populate("commentCount")
-    .sort(sort)
-    .limit(limit * 1)
-    .skip((page - 1) * limit)
-
-  const total = await Blog.countDocuments(query)
-
-  res.json({
-    blogs,
-    currentPage: page,
-    totalPages: Math.ceil(total / limit),
-    total
-  })
+  res.json(blogs)
 })
 
 // @desc    Get single blog
 // @route   GET /api/blogs/:id
 // @access  Public
 export const getBlog = asyncHandler(async (req, res) => {
-  let blog
+  const blog = await Blog.findById(req.params.id).populate("author", "name email").populate("comments.user", "name")
 
-  // Check if it's an ID or slug
-  if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    blog = await Blog.findById(req.params.id)
+  if (blog) {
+    res.json(blog)
   } else {
-    blog = await Blog.findOne({ slug: req.params.id })
-  }
-
-  if (!blog) {
     res.status(404)
     throw new Error("Blog not found")
   }
-
-  // Increment view count
-  await Blog.incrementViews(blog._id)
-
-  const populatedBlog = await Blog.findById(blog._id)
-    .populate("author", "name email avatar bio")
-    .populate("category", "name slug color")
-    .populate("likeCount")
-    .populate("commentCount")
-
-  res.json(populatedBlog)
 })
 
 // @desc    Create new blog
 // @route   POST /api/blogs
 // @access  Private
 export const createBlog = asyncHandler(async (req, res) => {
-  const { 
-    title, 
-    content, 
-    excerpt,
-    category, 
-    tags, 
-    image,
-    images,
-    status = 'draft',
-    featured = false,
-    metaDescription
-  } = req.body
+  const { title, content, category, tags, image } = req.body
 
   if (!title || !content) {
     res.status(400)
     throw new Error("Please add title and content")
   }
 
-  // Validate category exists
-  if (category) {
-    const categoryExists = await Category.findById(category)
-    if (!categoryExists) {
-      res.status(404)
-      throw new Error("Category not found")
-    }
-  }
-
   const blog = await Blog.create({
     title,
     content,
-    excerpt,
     category,
-    tags: tags || [],
+    tags,
     image,
-    images: images || [],
-    status,
-    featured,
-    metaDescription,
     author: req.user._id,
   })
 
-  const populatedBlog = await Blog.findById(blog._id)
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
+  const populatedBlog = await Blog.findById(blog._id).populate("author", "name email")
 
   res.status(201).json(populatedBlog)
 })
@@ -159,26 +76,15 @@ export const updateBlog = asyncHandler(async (req, res) => {
     throw new Error("Blog not found")
   }
 
-  // Check for user authorization
-  if (blog.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+  // Check for user
+  if (blog.author.toString() !== req.user._id.toString()) {
     res.status(401)
     throw new Error("User not authorized")
   }
 
-  // Validate category if provided
-  if (req.body.category) {
-    const categoryExists = await Category.findById(req.body.category)
-    if (!categoryExists) {
-      res.status(404)
-      throw new Error("Category not found")
-    }
-  }
-
   const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
-  })
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
+  }).populate("author", "name email")
 
   res.json(updatedBlog)
 })
@@ -194,123 +100,87 @@ export const deleteBlog = asyncHandler(async (req, res) => {
     throw new Error("Blog not found")
   }
 
-  // Check for user authorization
-  if (blog.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+  // Check for user
+  if (blog.author.toString() !== req.user._id.toString()) {
     res.status(401)
     throw new Error("User not authorized")
   }
 
-  // Delete associated comments and likes
-  await Comment.deleteMany({ blog: req.params.id })
-  await Like.deleteMany({ targetType: 'Blog', targetId: req.params.id })
+  await blog.deleteOne()
 
-  await Blog.findByIdAndDelete(req.params.id)
-
-  res.json({ message: "Blog removed", id: req.params.id })
+  res.json({ id: req.params.id })
 })
 
-// @desc    Get user's blogs
-// @route   GET /api/blogs/user/:userId
-// @access  Public
-export const getUserBlogs = asyncHandler(async (req, res) => {
-  const { userId } = req.params
-  const { status, page = 1, limit = 10 } = req.query
+// @desc    Like/Unlike blog
+// @route   POST /api/blogs/:id/like
+// @access  Private
+export const likeBlog = asyncHandler(async (req, res) => {
+  const blog = await Blog.findById(req.params.id)
 
-  const query = { author: userId }
-  if (status) {
-    query.status = status
+  if (!blog) {
+    res.status(404)
+    throw new Error("Blog not found")
+  }
+
+  const alreadyLiked = blog.likes.includes(req.user._id)
+
+  if (alreadyLiked) {
+    blog.likes = blog.likes.filter((like) => like.toString() !== req.user._id.toString())
   } else {
-    query.status = 'published' // Only show published blogs for public access
+    blog.likes.push(req.user._id)
   }
 
-  const blogs = await Blog.find(query)
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
-    .populate("likeCount")
-    .populate("commentCount")
-    .sort({ createdAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit)
+  await blog.save()
 
-  const total = await Blog.countDocuments(query)
-
-  res.json({
-    blogs,
-    currentPage: page,
-    totalPages: Math.ceil(total / limit),
-    total
-  })
+  res.json(blog)
 })
 
-// @desc    Get featured blogs
-// @route   GET /api/blogs/featured
-// @access  Public
-export const getFeaturedBlogs = asyncHandler(async (req, res) => {
-  const { limit = 5 } = req.query
+// @desc    Add comment to blog
+// @route   POST /api/blogs/:id/comments
+// @access  Private
+export const addComment = asyncHandler(async (req, res) => {
+  const { text } = req.body
 
-  const blogs = await Blog.find({ 
-    status: 'published', 
-    featured: true 
-  })
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
-    .populate("likeCount")
-    .populate("commentCount")
-    .sort({ publishedAt: -1 })
-    .limit(limit * 1)
+  const blog = await Blog.findById(req.params.id)
 
-  res.json(blogs)
+  if (!blog) {
+    res.status(404)
+    throw new Error("Blog not found")
+  }
+
+  const comment = {
+    user: req.user._id,
+    text,
+  }
+
+  blog.comments.push(comment)
+  await blog.save()
+
+  const populatedBlog = await Blog.findById(blog._id).populate("comments.user", "name")
+
+  res.status(201).json(populatedBlog.comments[populatedBlog.comments.length - 1])
 })
 
-// @desc    Search blogs
-// @route   GET /api/blogs/search
-// @access  Public
-export const searchBlogs = asyncHandler(async (req, res) => {
-  const { q, category, author, page = 1, limit = 10 } = req.query
+// @desc    Delete comment
+// @route   DELETE /api/comments/:id
+// @access  Private
+export const deleteComment = asyncHandler(async (req, res) => {
+  const blog = await Blog.findOne({ "comments._id": req.params.id })
 
-  if (!q) {
-    res.status(400)
-    throw new Error("Search query is required")
+  if (!blog) {
+    res.status(404)
+    throw new Error("Comment not found")
   }
 
-  const query = {
-    status: 'published',
-    $or: [
-      { title: { $regex: q, $options: "i" } },
-      { content: { $regex: q, $options: "i" } },
-      { tags: { $in: [new RegExp(q, "i")] } }
-    ]
+  const comment = blog.comments.id(req.params.id)
+
+  if (comment.user.toString() !== req.user._id.toString()) {
+    res.status(401)
+    throw new Error("User not authorized")
   }
 
-  if (category) {
-    const categoryDoc = await Category.findOne({
-      $or: [{ _id: category }, { slug: category }]
-    })
-    if (categoryDoc) {
-      query.category = categoryDoc._id
-    }
-  }
+  comment.deleteOne()
+  await blog.save()
 
-  if (author) {
-    query.author = author
-  }
-
-  const blogs = await Blog.find(query)
-    .populate("author", "name email avatar")
-    .populate("category", "name slug color")
-    .populate("likeCount")
-    .populate("commentCount")
-    .sort({ publishedAt: -1 })
-    .limit(limit * 1)
-    .skip((page - 1) * limit)
-
-  const total = await Blog.countDocuments(query)
-
-  res.json({
-    blogs,
-    currentPage: page,
-    totalPages: Math.ceil(total / limit),
-    total,
-    query: q
-  })
+  res.json({ id: req.params.id })
 })
