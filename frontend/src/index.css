@@ -93,8 +93,20 @@ h1, h2, h3, h4, h5, h6 {
     @apply bg-theme-bg border border-theme-border;
     @apply rounded-xl px-4 py-4 transition-all duration-300;
     @apply focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500;
-    @apply text-theme-text placeholder-theme-text-secondary;
+    @apply text-theme-text;
     line-height: 1.2;
+  }
+
+  .input-modern::placeholder {
+    @apply text-theme-text-secondary;
+    opacity: 0.5;
+  }
+
+  /* Search bar icon alignment fix */
+  .search-icon-centered {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
   }
 
   /* Glass morphism effect */

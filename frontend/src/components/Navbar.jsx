@@ -14,7 +14,9 @@ import {
   FiMenu, 
   FiX,
   FiPlus,
-  FiSettings
+  FiSettings,
+  FiBookOpen,
+  FiPenTool
 } from "react-icons/fi"
 
 function Navbar() {
@@ -38,22 +40,12 @@ function Navbar() {
         <div className="flex justify-between items-center h-18 py-2">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group" onClick={closeMenu}>
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
-                <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="6" y="8" width="20" height="16" rx="2" fill="white" opacity="0.9"/>
-                  <rect x="8" y="11" width="10" height="1" rx="0.5" fill="currentColor" opacity="0.6"/>
-                  <rect x="8" y="13" width="8" height="1" rx="0.5" fill="currentColor" opacity="0.6"/>
-                  <rect x="8" y="15" width="12" height="1" rx="0.5" fill="currentColor" opacity="0.6"/>
-                  <rect x="8" y="17" width="9" height="1" rx="0.5" fill="currentColor" opacity="0.4"/>
-                  <path d="M20 18L22 16L24 18L22 20L20 18Z" fill="white"/>
-                </svg>
-              </div>
+            <div className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+              <FiBookOpen className="text-white text-lg group-hover:rotate-12 transition-transform duration-300" />
+              <FiPenTool className="absolute top-1 right-1 text-white text-xs opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl"></div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-display font-bold gradient-text leading-tight">BlogHub</span>
-              <span className="text-xs text-theme-text-secondary font-medium leading-tight">Modern Blog Platform</span>
-            </div>
+            <span className="text-xl font-display font-bold gradient-text">BlogHub</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -124,13 +116,14 @@ function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200 group"
+              className="relative p-3 rounded-xl bg-theme-bg-secondary border border-theme-border text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-tertiary transition-all duration-200 group overflow-hidden"
               aria-label="Toggle theme"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-secondary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {theme === 'dark' ? (
-                <FiSun className="w-5 h-5 group-hover:rotate-180 transition-transform duration-300" />
+                <FiSun className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300 relative z-10" />
               ) : (
-                <FiMoon className="w-5 h-5 group-hover:-rotate-12 transition-transform duration-300" />
+                <FiMoon className="w-4 h-4 group-hover:-rotate-12 transition-transform duration-300 relative z-10" />
               )}
             </button>
           </div>

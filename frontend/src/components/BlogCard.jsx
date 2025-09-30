@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
-import { FiHeart, FiMessageCircle, FiUser, FiCalendar, FiClock, FiEye, FiBookmark } from "react-icons/fi"
+import { FiHeart, FiMessageCircle, FiUser, FiCalendar, FiClock, FiEye, FiBookmark, FiSearch } from "react-icons/fi"
+import { highlightSearchTerms } from "../services/synonymService"
 
-function BlogCard({ blog }) {
+function BlogCard({ blog, searchTerms = [], showRelevanceScore = false }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -75,17 +76,40 @@ function BlogCard({ blog }) {
           })}
         </div>
 
-        {/* Title */}
+        {/* Title with highlighting */}
         <Link to={`/blog/${blog._id}`} className="block group-hover:text-primary-600 transition-colors duration-200">
           <h3 className="text-xl font-display font-semibold text-theme-text leading-tight line-clamp-2 group-hover:text-primary-500 transition-colors duration-200">
-            {blog.title}
+            {searchTerms.length > 0 ? (
+              <span dangerouslySetInnerHTML={{ 
+                __html: highlightSearchTerms(blog.title, searchTerms) 
+              }} />
+            ) : (
+              blog.title
+            )}
           </h3>
         </Link>
 
-        {/* Excerpt */}
+        {/* Excerpt with highlighting */}
         <p className="text-theme-text-secondary leading-relaxed line-clamp-3">
-          {blog.excerpt || stripHtml(blog.content).slice(0, 150) + '...'}
+          {searchTerms.length > 0 ? (
+            <span dangerouslySetInnerHTML={{ 
+              __html: highlightSearchTerms(
+                blog.excerpt || stripHtml(blog.content).slice(0, 150) + '...', 
+                searchTerms
+              ) 
+            }} />
+          ) : (
+            blog.excerpt || stripHtml(blog.content).slice(0, 150) + '...'
+          )}
         </p>
+
+        {/* Relevance Score (for debugging/admin) */}
+        {showRelevanceScore && blog.relevanceScore && (
+          <div className="flex items-center text-xs text-theme-text-secondary bg-theme-bg-secondary px-2 py-1 rounded">
+            <FiSearch className="w-3 h-3 mr-1" />
+            Relevance: {blog.relevanceScore}
+          </div>
+        )}
 
         {/* Author and Meta */}
         <div className="flex items-center justify-between pt-4 border-t border-theme-border">

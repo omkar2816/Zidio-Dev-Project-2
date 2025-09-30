@@ -84,7 +84,7 @@ function Register() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-4"
+                  className="input-modern w-full pl-12 pr-4"
                   placeholder="John Doe"
                 />
               </div>
@@ -101,7 +101,7 @@ function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-4"
+                  className="input-modern w-full pl-12 pr-4"
                   placeholder="your@email.com"
                 />
               </div>
@@ -118,7 +118,7 @@ function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-12"
+                  className="input-modern w-full pl-12 pr-12"
                   placeholder="••••••••"
                 />
                 <button
@@ -142,7 +142,7 @@ function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-12"
+                  className="input-modern w-full pl-12 pr-12"
                   placeholder="••••••••"
                 />
                 <button

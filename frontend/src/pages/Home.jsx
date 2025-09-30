@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { Link } from "react-router-dom"
 import { getBlogs } from "../store/slices/blogSlice"
 import BlogCard from "../components/BlogCard"
 import SearchBar from "../components/SearchBar"
@@ -11,29 +12,38 @@ import {
   FiBookmark, 
   FiEdit3,
   FiArrowRight,
-  FiStar 
+  FiStar,
+  FiPlus,
+  FiSearch
 } from "react-icons/fi"
 
 function Home() {
   const dispatch = useDispatch()
   const { blogs, isLoading } = useSelector((state) => state.blog)
+  const { user } = useSelector((state) => state.auth)
   const { isDark } = useTheme()
   const [filters, setFilters] = useState({})
+  const [currentSearchTerms, setCurrentSearchTerms] = useState([])
   
-  // Calculate real stats from blog data
+  // Calculate real stats from actual data
   const stats = {
-    totalBlogs: blogs.length,
-    activeWriters: [...new Set(blogs.map(blog => blog.author?._id).filter(Boolean))].length,
-    totalReads: blogs.reduce((total, blog) => total + (blog.viewsCount || 0), 0),
-    featuredPosts: blogs.filter(blog => blog.featured).length
+    totalBlogs: blogs?.length || 0,
+    activeWriters: [...new Set(blogs?.map(blog => blog.author?._id).filter(Boolean))].length || 0,
+    totalReads: blogs?.reduce((total, blog) => total + (blog.viewsCount || 0), 0) || 0,
+    featuredPosts: blogs?.filter(blog => blog.featured).length || 0
   }
 
   useEffect(() => {
     dispatch(getBlogs(filters))
   }, [dispatch, filters])
 
-  const handleSearch = (searchTerm) => {
-    setFilters({ ...filters, search: searchTerm })
+  const handleSearch = (searchTerm, expandedTerms = []) => {
+    setCurrentSearchTerms(searchTerm ? [searchTerm] : [])
+    setFilters({ 
+      ...filters, 
+      search: searchTerm,
+      expandedTerms: expandedTerms.length > 0 ? JSON.stringify(expandedTerms) : undefined
+    })
   }
 
   const handleFilter = (newFilters) => {
@@ -138,12 +148,21 @@ function Home() {
             {blogs.length > 0 ? (
               <>
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-display font-bold text-theme-text">
-                    Latest Stories
+                  <h2 className="text-2xl font-display font-bold text-theme-text flex items-center">
+                    <FiTrendingUp className="mr-3 text-primary-500" />
+                    {filters.search ? 'Search Results' : 'Latest Stories'}
                   </h2>
-                  <span className="text-theme-text-secondary">
-                    {blogs.length} {blogs.length === 1 ? 'story' : 'stories'} found
-                  </span>
+                  <div className="text-right">
+                    <span className="text-theme-text-secondary">
+                      {blogs.length} {blogs.length === 1 ? 'story' : 'stories'} found
+                    </span>
+                    {filters.search && (
+                      <div className="text-xs text-theme-text-secondary mt-1 flex items-center">
+                        <FiSearch className="w-3 h-3 mr-1" />
+                        Including synonym matches for "{filters.search}"
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -153,7 +172,11 @@ function Home() {
                       className="animate-fade-in" 
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <BlogCard blog={blog} />
+                      <BlogCard 
+                        blog={blog} 
+                        searchTerms={currentSearchTerms}
+                        showRelevanceScore={currentSearchTerms.length > 0}
+                      />
                     </div>
                   ))}
                 </div>
@@ -162,17 +185,29 @@ function Home() {
               /* Empty State */
               <div className="text-center py-32 space-y-6">
                 <div className="w-24 h-24 mx-auto bg-gradient-to-br from-primary-500/20 to-secondary-500/20 rounded-full flex items-center justify-center">
-                  <FiBookmark className="w-10 h-10 text-theme-text-secondary" />
+                  <FiEdit3 className="w-10 h-10 text-theme-text-secondary" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-display font-bold text-theme-text">No stories found</h3>
+                  <h3 className="text-2xl font-display font-bold text-theme-text">
+                    {filters.search ? 'No stories match your search' : 'No stories available yet'}
+                  </h3>
                   <p className="text-theme-text-secondary max-w-md mx-auto">
-                    Try adjusting your search filters or be the first to create a story on this topic!
+                    {filters.search 
+                      ? 'Try different keywords or browse all stories by clearing your search.'
+                      : 'Be the first to share your story with the BlogHub community!'
+                    }
                   </p>
                 </div>
-                <button className="btn-primary px-6 py-3">
-                  Create First Story
-                </button>
+                {user ? (
+                  <Link to="/create" className="btn-primary inline-flex items-center px-6 py-3">
+                    <FiPlus className="mr-2" />
+                    Write Your First Story
+                  </Link>
+                ) : (
+                  <Link to="/login" className="btn-primary inline-flex items-center px-6 py-3">
+                    Join BlogHub to Start Writing
+                  </Link>
+                )}
               </div>
             )}
           </div>

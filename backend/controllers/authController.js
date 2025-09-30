@@ -16,6 +16,8 @@ const generateToken = (id) => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body
 
+  console.log("Registration attempt:", { name, email, passwordLength: password?.length })
+
   if (!name || !email || !password) {
     res.status(400)
     throw new Error("Please add all fields")
@@ -23,34 +25,50 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   // Check if user exists
   const userExists = await User.findOne({ email })
+  console.log("User exists check:", userExists ? "User found" : "No user found")
 
   if (userExists) {
     res.status(400)
     throw new Error("User already exists")
   }
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(password, salt)
+  try {
+    // Hash password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
+    console.log("Password hashed successfully")
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-  })
-
-  if (user) {
-    res.status(201).json({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: generateToken(user._id),
+    // Create user
+    console.log("Creating user with data:", { name, email, hashedPasswordLength: hashedPassword.length })
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     })
-  } else {
-    res.status(400)
-    throw new Error("Invalid user data")
+
+    console.log("User created successfully:", { 
+      id: user._id, 
+      name: user.name, 
+      email: user.email,
+      role: user.role 
+    })
+
+    if (user) {
+      res.status(201).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id),
+      })
+    } else {
+      res.status(400)
+      throw new Error("Invalid user data")
+    }
+  } catch (error) {
+    console.error("Error creating user:", error)
+    res.status(500)
+    throw new Error(`Failed to create user: ${error.message}`)
   }
 })
 

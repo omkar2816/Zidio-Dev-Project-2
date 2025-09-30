@@ -69,7 +69,7 @@ function Login() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-4"
+                  className="input-modern w-full pl-12 pr-4"
                   placeholder="your@email.com"
                 />
               </div>
@@ -86,7 +86,7 @@ function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="input-modern pl-12 pr-12"
+                  className="input-modern w-full pl-12 pr-12"
                   placeholder="••••••••"
                 />
                 <button

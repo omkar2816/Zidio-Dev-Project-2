@@ -5,15 +5,40 @@ import Blog from "../models/Blog.js"
 // @route   GET /api/blogs
 // @access  Public
 export const getBlogs = asyncHandler(async (req, res) => {
-  const { search, category, author } = req.query
+  const { search, expandedTerms, category, author, sortBy = 'createdAt' } = req.query
 
   const query = {}
 
   if (search) {
-    query.$or = [{ title: { $regex: search, $options: "i" } }, { tags: { $in: [new RegExp(search, "i")] } }]
+    // Parse expanded terms if provided (from frontend synonym service)
+    let searchTerms = [search]
+    if (expandedTerms) {
+      try {
+        searchTerms = Array.isArray(expandedTerms) ? expandedTerms : JSON.parse(expandedTerms)
+      } catch (e) {
+        searchTerms = [search]
+      }
+    }
+
+    // Create regex patterns for all search terms
+    const searchRegexes = searchTerms.map(term => new RegExp(term, "i"))
+    
+    // Enhanced search across multiple fields with synonym support
+    query.$or = [
+      // Title search (highest priority)
+      { title: { $in: searchRegexes } },
+      // Content search
+      { content: { $in: searchRegexes } },
+      // Tags search
+      { tags: { $in: searchRegexes } },
+      // Category search
+      { category: { $in: searchRegexes } },
+      // Author name search (populated field)
+      { "author.name": { $in: searchRegexes } }
+    ]
   }
 
-  if (category) {
+  if (category && category !== 'all') {
     query.category = category
   }
 
@@ -21,9 +46,88 @@ export const getBlogs = asyncHandler(async (req, res) => {
     query.author = author
   }
 
-  const blogs = await Blog.find(query).populate("author", "name email").sort({ createdAt: -1 })
+  // Determine sort criteria
+  let sortCriteria = { createdAt: -1 } // default
+  
+  switch (sortBy) {
+    case 'likesCount':
+      sortCriteria = { likesCount: -1, createdAt: -1 }
+      break
+    case 'viewsCount':
+      sortCriteria = { viewsCount: -1, createdAt: -1 }
+      break
+    case 'title':
+      sortCriteria = { title: 1 }
+      break
+    case 'createdAt':
+    default:
+      sortCriteria = { createdAt: -1 }
+      break
+  }
 
-  res.json(blogs)
+  try {
+    let blogs = await Blog.find(query)
+      .populate("author", "name email")
+      .sort(sortCriteria)
+      .lean()
+
+    // If we have search terms, calculate relevance scores and re-sort
+    if (search && blogs.length > 0) {
+      blogs = blogs.map(blog => {
+        let relevanceScore = 0
+        const searchLower = search.toLowerCase()
+        
+        // Calculate relevance based on where the term appears
+        if (blog.title?.toLowerCase().includes(searchLower)) {
+          relevanceScore += 10 // Title match gets highest score
+        }
+        
+        if (blog.content?.toLowerCase().includes(searchLower)) {
+          relevanceScore += 5 // Content match
+        }
+        
+        if (blog.tags?.some(tag => tag.toLowerCase().includes(searchLower))) {
+          relevanceScore += 7 // Tag match
+        }
+        
+        if (blog.category?.toLowerCase().includes(searchLower)) {
+          relevanceScore += 6 // Category match
+        }
+        
+        if (blog.author?.name?.toLowerCase().includes(searchLower)) {
+          relevanceScore += 4 // Author match
+        }
+
+        return {
+          ...blog,
+          relevanceScore
+        }
+      })
+
+      // Sort by relevance first, then by original sort criteria
+      blogs.sort((a, b) => {
+        if (b.relevanceScore !== a.relevanceScore) {
+          return b.relevanceScore - a.relevanceScore
+        }
+        // Fall back to original sort criteria
+        if (sortBy === 'likesCount') {
+          return (b.likesCount || 0) - (a.likesCount || 0)
+        }
+        if (sortBy === 'viewsCount') {
+          return (b.viewsCount || 0) - (a.viewsCount || 0)
+        }
+        if (sortBy === 'title') {
+          return a.title.localeCompare(b.title)
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt)
+      })
+    }
+
+    res.json(blogs)
+  } catch (error) {
+    res.status(500)
+    throw new Error(`Error fetching blogs: ${error.message}`)
+  }
 })
 
 // @desc    Get single blog
