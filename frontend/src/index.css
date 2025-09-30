@@ -102,6 +102,20 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0.5;
   }
 
+  /* Select dropdown styles */
+  .input-modern select {
+    @apply cursor-pointer;
+  }
+
+  .input-modern select:focus {
+    @apply outline-none;
+  }
+
+  /* Custom select dropdown arrow */
+  select.input-modern {
+    background-image: none;
+  }
+
   /* Search bar icon alignment fix */
   .search-icon-centered {
     position: absolute !important;

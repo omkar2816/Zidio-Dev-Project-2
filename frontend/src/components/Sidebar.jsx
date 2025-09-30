@@ -51,6 +51,12 @@ function Sidebar() {
 
   const sidebarWidth = isCollapsed && !isMobile ? "w-16" : "w-64"
   
+  const getRoleDashboardPath = () => {
+    if (user?.role === "superadmin") return "/superadmin"
+    if (user?.role === "admin") return "/admin"
+    return "/dashboard"
+  }
+
   const navigationItems = [
     {
       label: "Home",
@@ -59,9 +65,9 @@ function Sidebar() {
       roles: ["user", "admin", "superadmin"]
     },
     {
-      label: "User Dashboard", 
+      label: user?.role === "superadmin" ? "SuperAdmin Panel" : user?.role === "admin" ? "Admin Panel" : "Dashboard", 
       icon: FiGrid,
-      path: "/dashboard",
+      path: getRoleDashboardPath(),
       roles: ["user", "admin", "superadmin"]
     },
     {

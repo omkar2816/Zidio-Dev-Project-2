@@ -21,6 +21,8 @@ import {
   FiEye,
   FiBell
 } from "react-icons/fi"
+import SuperAdminPanel from "../pages/SuperAdminPanel"
+import AdminPanel from "../pages/AdminPanel"
 
 function Navbar() {
   const navigate = useNavigate()
@@ -121,11 +123,11 @@ function Navbar() {
             {user ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to={user?.role === "superadmin" ? "/superadmin" : user?.role === "admin" ? "/admin" : "/dashboard"}
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200 group"
                 >
                   <FiUser className="group-hover:scale-110 transition-transform duration-200" />
-                  <span>Dashboard</span>
+                  <span>{user?.role === "superadmin" ? "Super Admin Panel" : user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
                 </Link>
 
                 {(user.role === "admin" || user.role === "superadmin") && (
@@ -328,12 +330,12 @@ function Navbar() {
               {user ? (
                 <>
                   <Link
-                    to="/dashboard"
+                    to={user?.role === "superadmin" ? "/superadmin" : user?.role === "admin" ? "/admin" : "/dashboard"}
                     onClick={closeMenu}
                     className="flex items-center space-x-3 px-3 py-3 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200"
                   >
                     <FiUser />
-                    <span>Dashboard</span>
+                    <span>{user?.role === "superadmin" ? "Super Admin Panel" : user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
                   </Link>
 
                   {(user.role === "admin" || user.role === "superadmin") && (

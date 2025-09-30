@@ -4,12 +4,13 @@ import { useDispatch, useSelector } from "react-redux"
 import { login, reset } from "../store/slices/authSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import toast from "react-hot-toast"
-import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader } from "react-icons/fi"
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader, FiUserCheck, FiZap } from "react-icons/fi"
 
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: "user", // Default role
   })
   const [showPassword, setShowPassword] = useState(false)
 
@@ -24,7 +25,14 @@ function Login() {
     }
 
     if (isSuccess || user) {
-      navigate("/dashboard")
+      // Redirect based on user role
+      if (user?.role === "superadmin") {
+        navigate("/superadmin")
+      } else if (user?.role === "admin") {
+        navigate("/admin")
+      } else {
+        navigate("/dashboard")
+      }
     }
 
     dispatch(reset())
@@ -38,6 +46,21 @@ function Login() {
     e.preventDefault()
     dispatch(login(formData))
   }
+
+  const handleAutofillSuperadmin = () => {
+    setFormData({
+      email: "superadmin@bloghub.com",
+      password: "SuperAdmin123!",
+      role: "superadmin"
+    })
+    toast.success("Superadmin credentials autofilled!")
+  }
+
+  const roleOptions = [
+    { value: "user", label: "User", description: "Regular user account" },
+    { value: "admin", label: "Admin", description: "Administrator account" },
+    { value: "superadmin", label: "SuperAdmin", description: "Super administrator account" }
+  ]
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
@@ -97,6 +120,43 @@ function Login() {
                   {showPassword ? <FiEyeOff /> : <FiEye />}
                 </button>
               </div>
+            </div>
+
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-theme-text">Login as</label>
+              <div className="relative group">
+                <FiUserCheck className="absolute left-4 top-1/2 transform -translate-y-1/2 text-theme-text-secondary group-focus-within:text-primary-500 transition-colors duration-200" />
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="input-modern w-full pl-12 pr-4 appearance-none cursor-pointer"
+                >
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} - {option.description}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg className="w-4 h-4 text-theme-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* SuperAdmin Autofill */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={handleAutofillSuperadmin}
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-lg transition-all duration-200 text-sm font-medium border border-purple-500/30 hover:border-purple-500/50"
+              >
+                <FiZap className="w-4 h-4" />
+                <span>Autofill SuperAdmin</span>
+              </button>
             </div>
 
             {/* Submit Button */}

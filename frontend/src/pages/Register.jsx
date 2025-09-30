@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { register, reset } from "../store/slices/authSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import toast from "react-hot-toast"
-import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader, FiUserPlus, FiShield } from "react-icons/fi"
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiLoader, FiUserPlus, FiShield, FiUserCheck } from "react-icons/fi"
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "user", // Default role
     requestAdminAccess: false,
     adminRequestReason: "",
   })
@@ -29,7 +30,14 @@ function Register() {
     }
 
     if (isSuccess || user) {
-      navigate("/dashboard")
+      // Redirect based on user role
+      if (user?.role === "superadmin") {
+        navigate("/superadmin")
+      } else if (user?.role === "admin") {
+        navigate("/admin")
+      } else {
+        navigate("/dashboard")
+      }
     }
 
     dispatch(reset())
@@ -47,7 +55,7 @@ function Register() {
       return
     }
 
-    if (formData.requestAdminAccess && !formData.adminRequestReason.trim()) {
+    if (formData.role === "admin" && !formData.adminRequestReason.trim()) {
       toast.error("Please provide a reason for requesting admin access")
       return
     }
@@ -56,12 +64,18 @@ function Register() {
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      requestAdminAccess: formData.requestAdminAccess,
+      role: formData.role,
+      requestAdminAccess: formData.role === "admin",
       adminRequestReason: formData.adminRequestReason,
     }
 
     dispatch(register(userData))
   }
+
+  const roleOptions = [
+    { value: "user", label: "User", description: "Regular user account" },
+    { value: "admin", label: "Admin", description: "Administrator account" }
+  ]
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
@@ -164,23 +178,49 @@ function Register() {
               </div>
             </div>
 
-            {/* Admin Request Section */}
-            <div className="space-y-4 p-4 bg-theme-bg-secondary rounded-xl border border-theme-border">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  id="requestAdminAccess"
-                  name="requestAdminAccess"
-                  checked={formData.requestAdminAccess}
-                  onChange={(e) => setFormData({ ...formData, requestAdminAccess: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 bg-theme-bg border-theme-border rounded focus:ring-primary-500 focus:ring-2"
-                />
-                <label htmlFor="requestAdminAccess" className="text-sm font-medium text-theme-text cursor-pointer">
-                  Request Admin Access
-                </label>
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-theme-text">Account Type</label>
+              <div className="relative group">
+                <FiUserCheck className="absolute left-4 top-1/2 transform -translate-y-1/2 text-theme-text-secondary group-focus-within:text-primary-500 transition-colors duration-200" />
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="input-modern w-full pl-12 pr-4 appearance-none cursor-pointer"
+                >
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} - {option.description}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg className="w-4 h-4 text-theme-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
+              <p className="text-xs text-theme-text-secondary">
+                Note: Admin role requires approval from existing administrators.
+              </p>
+            </div>
+
+            {/* Admin Request Section */}
+            {formData.role === "admin" && (
+              <div className="space-y-4 p-4 bg-theme-bg-secondary rounded-xl border border-theme-border">
+                <div className="flex items-center space-x-3">
+                  <FiShield className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <h3 className="text-sm font-medium text-theme-text">
+                      Admin Access Request
+                    </h3>
+                    <p className="text-xs text-theme-text-secondary">
+                      Admin accounts require approval from existing administrators
+                    </p>
+                  </div>
+                </div>
               
-              {formData.requestAdminAccess && (
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-theme-text">
                     Why do you need admin access? <span className="text-red-500">*</span>
@@ -189,17 +229,17 @@ function Register() {
                     name="adminRequestReason"
                     value={formData.adminRequestReason}
                     onChange={handleChange}
-                    required={formData.requestAdminAccess}
+                    required={formData.role === "admin"}
                     className="input-modern w-full min-h-[80px] resize-none"
                     placeholder="Please explain why you need admin privileges..."
                     maxLength="500"
                   />
                   <p className="text-xs text-theme-text-secondary">
-                    Your request will be reviewed by a superadmin. Please provide a clear reason.
+                    Your request will be reviewed by existing administrators. Please provide a clear reason.
                   </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

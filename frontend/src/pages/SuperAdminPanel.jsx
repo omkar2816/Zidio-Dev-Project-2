@@ -30,6 +30,7 @@ function SuperAdminPanel() {
   const [requestHistory, setRequestHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [hasError, setHasError] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || "/api"
 
@@ -60,8 +61,17 @@ function SuperAdminPanel() {
       setRequestHistory(historyRes.data)
       setLoading(false)
     } catch (error) {
-      toast.error("Failed to fetch super admin data")
+      console.error("Failed to fetch super admin data:", error)
+      toast.error("Backend server not connected. Showing offline mode.")
+      setHasError(true)
       setLoading(false)
+      
+      // Provide fallback data for offline mode
+      setSystemStats({
+        userStats: { totalRegularUsers: 0, totalAdmins: 0, activeUsers: 0 },
+        blogStats: { totalBlogs: 0, activePosts: 0 },
+        systemHealth: { uptime: "Offline", lastBackup: "Unknown" }
+      })
     }
   }
 
@@ -165,16 +175,7 @@ function SuperAdminPanel() {
     return <AdminPanel />
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-red-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">Loading Super Admin Dashboard...</p>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-red-50">
@@ -210,8 +211,35 @@ function SuperAdminPanel() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading SuperAdmin Dashboard...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Offline Mode Banner */}
+        {!loading && hasError && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-yellow-800">Offline Mode</h3>
+                <p className="text-sm text-yellow-700">Backend server is not connected. Some features may be limited.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Overview Tab */}
-        {activeTab === 'overview' && systemStats && (
+        {!loading && activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Super Admin Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,7 +343,7 @@ function SuperAdminPanel() {
         )}
 
         {/* Admin Requests Tab */}
-        {activeTab === 'admin-requests' && (
+        {!loading && activeTab === 'admin-requests' && (
           <div className="space-y-6">
             {/* Pending Requests */}
             <div className="card-modern p-6">
@@ -464,7 +492,7 @@ function SuperAdminPanel() {
         )}
 
         {/* Admin Management Tab */}
-        {activeTab === 'admin-management' && (
+        {!loading && activeTab === 'admin-management' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Admin Management</h2>
@@ -535,7 +563,7 @@ function SuperAdminPanel() {
         )}
 
         {/* System Health Tab */}
-        {activeTab === 'system-health' && (
+        {!loading && activeTab === 'system-health' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <SystemHealthCard
@@ -605,7 +633,7 @@ function SuperAdminPanel() {
         )}
 
         {/* Standard Admin View */}
-        {activeTab === 'standard-admin' && (
+        {!loading && activeTab === 'standard-admin' && (
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Standard Admin Dashboard</h2>
