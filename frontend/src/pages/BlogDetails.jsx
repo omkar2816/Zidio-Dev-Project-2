@@ -86,112 +86,215 @@ function BlogDetails() {
   }
 
   if (isLoading) {
-    return <div className="text-center py-20">Loading...</div>
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="loading-spinner w-12 h-12"></div>
+      </div>
+    )
   }
 
   if (!blog) {
-    return <div className="text-center py-20">Blog not found</div>
+    return (
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">📝</div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Blog not found</h2>
+        <p className="text-gray-600 dark:text-gray-400">The blog you're looking for doesn't exist or has been removed.</p>
+      </div>
+    )
   }
 
   const isAuthor = user?._id === blog.author?._id
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <article className="bg-white rounded-lg shadow-md overflow-hidden">
-        {blog.image && (
-          <img src={blog.image || "/placeholder.svg"} alt={blog.title} className="w-full h-96 object-cover" />
-        )}
+    <div className="min-h-screen py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <article className="card overflow-hidden">
+          {/* Hero Image */}
+          {blog.image ? (
+            <div className="relative h-96 overflow-hidden">
+              <img 
+                src={blog.image || "/placeholder.svg"} 
+                alt={blog.title} 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            </div>
+          ) : (
+            <div className="h-64 bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center">
+              <div className="text-8xl text-gray-400 dark:text-gray-600">📝</div>
+            </div>
+          )}
 
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">{blog.category}</span>
-              {blog.tags?.map((tag, index) => (
-                <span key={index} className="text-gray-400 text-sm">
-                  #{tag}
-                </span>
-              ))}
+          <div className="p-8 space-y-8">
+            {/* Header Section */}
+            <div className="space-y-6">
+              {/* Tags and Actions */}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="px-4 py-2 rounded-full text-sm font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                    {blog.category || 'General'}
+                  </span>
+                  {blog.tags?.map((tag, index) => (
+                    <span key={index} className="px-3 py-1 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                {isAuthor && (
+                  <div className="flex space-x-3">
+                    <Link
+                      to={`/edit/${blog._id}`}
+                      className="btn btn-secondary px-4 py-2 flex items-center space-x-2"
+                    >
+                      <FiEdit className="w-4 h-4" />
+                      <span>Edit</span>
+                    </Link>
+                    <button 
+                      onClick={handleDelete} 
+                      className="btn px-4 py-2 flex items-center space-x-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 dark:text-white leading-tight">
+                {blog.title}
+              </h1>
+
+              {/* Author and Meta Info */}
+              <div className="flex items-center space-x-6 text-gray-600 dark:text-gray-400">
+                <Link 
+                  to={`/profile/${blog.author?._id}`} 
+                  className="flex items-center space-x-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    {blog.author?.name?.charAt(0).toUpperCase() || 'A'}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {blog.author?.name || 'Anonymous'}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {formatDate(blog.createdAt)}
+                    </span>
+                  </div>
+                </Link>
+              </div>
             </div>
 
-            {isAuthor && (
-              <div className="flex space-x-2">
-                <Link
-                  to={`/edit/${blog._id}`}
-                  className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
+            {/* Content */}
+            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-a:text-blue-600 dark:prose-a:text-blue-400" 
+                 dangerouslySetInnerHTML={{ __html: blog.content }} />
+
+            {/* Engagement Section */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center space-x-3 px-6 py-3 rounded-2xl transition-all duration-300 group ${
+                    liked 
+                      ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" 
+                      : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
+                  }`}
                 >
-                  <FiEdit />
-                  <span>Edit</span>
-                </Link>
-                <button onClick={handleDelete} className="flex items-center space-x-1 text-red-600 hover:text-red-700">
-                  <FiTrash2 />
-                  <span>Delete</span>
+                  <FiHeart className={`w-5 h-5 transition-transform group-hover:scale-110 ${liked ? "fill-current" : ""}`} />
+                  <span className="font-semibold">{likesCount} {likesCount === 1 ? 'Like' : 'Likes'}</span>
                 </button>
+
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        {/* Comments Section */}
+        <div className="mt-8 card p-8 space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-white">
+              Comments ({comments.length})
+            </h2>
+          </div>
+
+          {/* Add Comment Form */}
+          {user ? (
+            <form onSubmit={handleComment} className="space-y-4">
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1">
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Share your thoughts about this post..."
+                    className="input-modern w-full min-h-[100px] resize-none"
+                    rows="4"
+                    required
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      type="submit"
+                      className="btn btn-primary px-6 py-2"
+                    >
+                      Post Comment
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Join the conversation! Please log in to share your thoughts.
+              </p>
+              <Link to="/login" className="btn btn-primary">
+                Sign In to Comment
+              </Link>
+            </div>
+          )}
+
+          {/* Comments List */}
+          <div className="space-y-6">
+            {comments.length > 0 ? (
+              comments.map((comment, index) => (
+                <div key={index} className="flex items-start space-x-4 pb-6 border-b border-gray-100 dark:border-gray-700 last:border-0 last:pb-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    {comment.user?.name?.charAt(0).toUpperCase() || 'A'}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {comment.user?.name || 'Anonymous'}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {formatDate(comment.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {comment.text}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-5xl mb-4">💬</div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No comments yet
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Be the first to share your thoughts about this post!
+                </p>
               </div>
             )}
           </div>
-
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{blog.title}</h1>
-
-          <div className="flex items-center space-x-6 text-gray-600 mb-8">
-            <Link to={`/profile/${blog.author?._id}`} className="flex items-center space-x-2 hover:text-primary">
-              <FiUser />
-              <span>{blog.author?.name}</span>
-            </Link>
-            <div className="flex items-center space-x-2">
-              <FiCalendar />
-              <span>{formatDate(blog.createdAt)}</span>
-            </div>
-          </div>
-
-          <div className="prose max-w-none mb-8" dangerouslySetInnerHTML={{ __html: blog.content }} />
-
-          <div className="border-t pt-6">
-            <button
-              onClick={handleLike}
-              className={`flex items-center space-x-2 ${
-                liked ? "text-red-600" : "text-gray-600"
-              } hover:text-red-600 transition`}
-            >
-              <FiHeart className={liked ? "fill-current" : ""} />
-              <span>{likesCount} Likes</span>
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <div className="mt-8 bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Comments ({comments.length})</h2>
-
-        {user && (
-          <form onSubmit={handleComment} className="mb-8">
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Write a comment..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              rows="3"
-              required
-            />
-            <button
-              type="submit"
-              className="mt-2 bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              Post Comment
-            </button>
-          </form>
-        )}
-
-        <div className="space-y-4">
-          {comments.map((comment, index) => (
-            <div key={index} className="border-b pb-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <FiUser className="text-gray-400" />
-                <span className="font-semibold">{comment.user?.name}</span>
-                <span className="text-gray-400 text-sm">{formatDate(comment.createdAt)}</span>
-              </div>
-              <p className="text-gray-700">{comment.text}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import { useSelector } from "react-redux"
+import { ThemeProvider } from "./contexts/ThemeContext"
 import Navbar from "./components/Navbar"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
@@ -15,8 +16,9 @@ function App() {
   const { user } = useSelector((state) => state.auth)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <ThemeProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-slate-800 transition-all duration-500">
+        <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
@@ -28,7 +30,8 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/admin" element={user?.role === "admin" ? <AdminPanel /> : <Navigate to="/" />} />
       </Routes>
-    </div>
+      </div>
+    </ThemeProvider>
   )
 }
 

@@ -5,18 +5,24 @@ import {
   createBlog,
   updateBlog,
   deleteBlog,
-  likeBlog,
-  addComment,
-  deleteComment,
+  getUserBlogs,
+  getFeaturedBlogs,
+  searchBlogs
 } from "../controllers/blogController.js"
-import { protect } from "../middleware/authMiddleware.js"
+import { protect, admin } from "../middleware/authMiddleware.js"
 
 const router = express.Router()
 
-router.route("/").get(getBlogs).post(protect, createBlog)
-router.route("/:id").get(getBlog).put(protect, updateBlog).delete(protect, deleteBlog)
-router.post("/:id/like", protect, likeBlog)
-router.post("/:id/comments", protect, addComment)
-router.delete("/comments/:id", protect, deleteComment)
+// Public routes
+router.get("/", getBlogs)
+router.get("/featured", getFeaturedBlogs)
+router.get("/search", searchBlogs)
+router.get("/user/:userId", getUserBlogs)
+router.get("/:id", getBlog)
+
+// Protected routes
+router.post("/", protect, createBlog)
+router.put("/:id", protect, updateBlog)
+router.delete("/:id", protect, deleteBlog)
 
 export default router
