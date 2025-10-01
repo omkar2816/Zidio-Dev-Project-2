@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { useSelector } from "react-redux"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { SidebarProvider } from "./contexts/SidebarContext"
-import LenisProvider from "./components/LenisProvider"
 import Navbar from "./components/Navbar"
 import Sidebar from "./components/Sidebar"
 import Home from "./pages/Home"
@@ -17,16 +16,14 @@ import MyProfile from "./pages/MyProfile"
 import Settings from "./pages/Settings"
 import AdminDashboard from "./pages/AdminDashboard"
 import SuperAdminDashboard from "./pages/SuperAdminDashboard"
-import Bookmarks from "./pages/Bookmarks"
 
 function App() {
   const { user } = useSelector((state) => state.auth)
 
   return (
-    <LenisProvider>
-      <ThemeProvider>
-        <SidebarProvider>
-          <div className="min-h-screen bg-theme-bg transition-colors duration-300">
+    <ThemeProvider>
+      <SidebarProvider>
+        <div className="min-h-screen bg-theme-bg transition-colors duration-300">
           <Navbar />
           <div className="relative">
             <Sidebar />
@@ -44,7 +41,6 @@ function App() {
               <Route path="/blog/:id" element={<BlogDetails />} />
               <Route path="/profile" element={user ? <MyProfile /> : <Navigate to="/login" />} />
               <Route path="/profile/:id" element={<Profile />} />
-              <Route path="/bookmarks" element={user ? <Bookmarks /> : <Navigate to="/login" />} />
               <Route path="/settings" element={user ? <Settings /> : <Navigate to="/login" />} />
               <Route path="/admin" element={(user?.role === "admin" || user?.role === "superadmin") ? <AdminDashboard /> : <Navigate to="/" />} />
               <Route path="/admin-dashboard" element={(user?.role === "admin" || user?.role === "superadmin") ? <AdminDashboard /> : <Navigate to="/" />} />
@@ -55,11 +51,10 @@ function App() {
                 </Routes>
               </div>
             </main>
-          </div>
         </div>
-        </SidebarProvider>
-      </ThemeProvider>
-    </LenisProvider>
+      </div>
+      </SidebarProvider>
+    </ThemeProvider>
   )
 }
 

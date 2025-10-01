@@ -67,7 +67,7 @@ export const getBlogs = asyncHandler(async (req, res) => {
 
   try {
     let blogs = await Blog.find(query)
-      .populate("author", "name email avatar")
+      .populate("author", "name email")
       .sort(sortCriteria)
       .lean()
 
@@ -134,7 +134,7 @@ export const getBlogs = asyncHandler(async (req, res) => {
 // @route   GET /api/blogs/:id
 // @access  Public
 export const getBlog = asyncHandler(async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate("author", "name email avatar").populate("comments.user", "name")
+  const blog = await Blog.findById(req.params.id).populate("author", "name email").populate("comments.user", "name")
 
   if (blog) {
     res.json(blog)
@@ -164,7 +164,7 @@ export const createBlog = asyncHandler(async (req, res) => {
     author: req.user._id,
   })
 
-  const populatedBlog = await Blog.findById(blog._id).populate("author", "name email avatar")
+  const populatedBlog = await Blog.findById(blog._id).populate("author", "name email")
 
   res.status(201).json(populatedBlog)
 })
@@ -188,7 +188,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
 
   const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
-  }).populate("author", "name email avatar")
+  }).populate("author", "name email")
 
   res.json(updatedBlog)
 })
@@ -287,53 +287,4 @@ export const deleteComment = asyncHandler(async (req, res) => {
   await blog.save()
 
   res.json({ id: req.params.id })
-})
-
-// @desc    Toggle bookmark a blog
-// @route   PUT /api/blogs/:id/bookmark
-// @access  Private
-export const toggleBookmark = asyncHandler(async (req, res) => {
-  const blog = await Blog.findById(req.params.id)
-
-  if (!blog) {
-    res.status(404)
-    throw new Error("Blog not found")
-  }
-
-  const user = req.user
-
-  // Check if blog is already bookmarked
-  const isBookmarked = user.bookmarks.includes(req.params.id)
-
-  if (isBookmarked) {
-    // Remove from bookmarks
-    user.bookmarks = user.bookmarks.filter(
-      (bookmarkId) => bookmarkId.toString() !== req.params.id
-    )
-  } else {
-    // Add to bookmarks
-    user.bookmarks.push(req.params.id)
-  }
-
-  await user.save()
-
-  res.json({
-    isBookmarked: !isBookmarked,
-    message: isBookmarked ? "Bookmark removed" : "Blog bookmarked"
-  })
-})
-
-// @desc    Get user's bookmarked blogs
-// @route   GET /api/blogs/bookmarks
-// @access  Private
-export const getBookmarkedBlogs = asyncHandler(async (req, res) => {
-  const user = await req.user.populate({
-    path: 'bookmarks',
-    populate: {
-      path: 'author',
-      select: 'name email'
-    }
-  })
-
-  res.json(user.bookmarks)
 })

@@ -13,7 +13,6 @@ import {
   FiGrid,
   FiFileText,
   FiPlusCircle,
-  FiBookmark,
   FiBookOpen,
   FiPenTool
 } from "react-icons/fi"
@@ -45,12 +44,6 @@ function Sidebar() {
         roles: ["user", "admin", "superadmin"]
       },
       {
-        label: "Dashboard", 
-        icon: FiGrid,
-        path: "/dashboard",
-        roles: ["user"]
-      },
-      {
         label: "Create Blog",
         icon: FiPlusCircle,
         path: "/create", 
@@ -60,19 +53,33 @@ function Sidebar() {
         label: "My Blogs",
         icon: FiFileText,
         path: "/dashboard",
+<<<<<<< HEAD
+<<<<<<< HEAD
         roles: ["admin", "superadmin"]
+=======
+        roles: ["user", "admin", "superadmin"]
+>>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
       },
       {
         label: "Bookmarks",
         icon: FiBookmark,
         path: "/bookmarks",
+=======
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
         roles: ["user", "admin", "superadmin"]
       }
     ]
 
     // Role-specific items
     const roleItems = {
-      user: [],
+      user: [
+        {
+          label: "Dashboard", 
+          icon: FiGrid,
+          path: "/dashboard",
+          roles: ["user"]
+        }
+      ],
       admin: [
         {
           label: "Admin Dashboard",
@@ -100,6 +107,12 @@ function Sidebar() {
     const userRoleItems = roleItems[user?.role] || []
     
     const endItems = [
+      {
+        label: "Profile",
+        icon: FiUser,
+        path: "/profile",
+        roles: ["user", "admin", "superadmin"]
+      },
       {
         label: "Settings",
         icon: FiSettings,

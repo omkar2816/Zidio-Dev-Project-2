@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux"
 import { logout } from "../store/slices/authSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import { useSidebar } from "../contexts/SidebarContext"
-import Avatar from "./Avatar"
 import { 
   FiLogOut, 
   FiUser, 
@@ -64,9 +63,32 @@ function Navbar() {
     }
   }, [])
 
+  // Generate user avatar initials
+  const getUserInitials = (name) => {
+    if (!name) return 'U'
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  }
+
   // Check if link is active
   const isActiveLink = (path) => {
     return location.pathname === path
+  }
+
+  // Generate consistent avatar color based on name
+  const getAvatarColor = (name) => {
+    if (!name) return 'from-gray-400 to-gray-500'
+    const colors = [
+      'from-blue-400 to-blue-600',
+      'from-purple-400 to-purple-600', 
+      'from-pink-400 to-pink-600',
+      'from-indigo-400 to-indigo-600',
+      'from-cyan-400 to-cyan-600',
+      'from-teal-400 to-teal-600',
+      'from-green-400 to-green-600',
+      'from-orange-400 to-orange-600'
+    ]
+    const index = name.charCodeAt(0) % colors.length
+    return colors[index]
   }
 
   const handleMouseEnter = () => {
@@ -151,11 +173,9 @@ function Navbar() {
                     onMouseLeave={handleMouseLeave}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-theme-bg-secondary transition-all duration-200 group relative z-50"
                   >
-                    <Avatar 
-                      user={user} 
-                      size="sm" 
-                      className="group-hover:scale-105 transition-transform duration-200" 
-                    />
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(user?.name)} flex items-center justify-center text-white text-sm font-medium shadow-lg ring-2 ring-white/20 group-hover:scale-105 transition-transform duration-200`}>
+                      {getUserInitials(user?.name)}
+                    </div>
                     <div className="hidden lg:block text-left">
                       <div className="text-sm font-medium text-theme-text">{user?.name}</div>
                       <div className="text-xs text-theme-text-secondary capitalize">{user?.role}</div>
@@ -174,6 +194,7 @@ function Navbar() {
                       }}
                     >
                       {/* User Info Header */}
+<<<<<<< HEAD
                       <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30">
                         <div className="flex items-center space-x-4">
                           <Avatar 
@@ -186,6 +207,18 @@ function Navbar() {
                             <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center space-x-1 mt-1">
                               <FiMail className="w-3 h-3 flex-shrink-0" />
                               <span className="truncate">{user?.email}</span>
+=======
+                      <div className="px-4 py-3 border-b border-theme-border/50">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getAvatarColor(user?.name)} flex items-center justify-center text-white text-lg font-bold shadow-lg`}>
+                            {getUserInitials(user?.name)}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-theme-text">{user?.name}</div>
+                            <div className="text-sm text-theme-text-secondary flex items-center space-x-1">
+                              <FiMail className="w-3 h-3" />
+                              <span>{user?.email}</span>
+>>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
                             </div>
                             <div className="text-xs text-primary-600 dark:text-primary-400 font-medium capitalize flex items-center space-x-1 mt-1">
                               <FiShield className="w-3 h-3 flex-shrink-0" />
@@ -198,7 +231,7 @@ function Navbar() {
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link
-                          to={`/profile/${user?._id}`}
+                          to="/profile"
                           onClick={(e) => {
                             e.stopPropagation()
                             setIsProfileDropdownOpen(false)
@@ -300,6 +333,7 @@ function Navbar() {
             <div className="px-4 py-6 space-y-3">
               {user && (
                 <div className="bg-theme-bg-secondary rounded-xl p-4 mb-4 border border-theme-border/50">
+<<<<<<< HEAD
                   <div className="flex items-center space-x-4">
                     <Avatar 
                       user={user} 
@@ -309,6 +343,15 @@ function Navbar() {
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-theme-text truncate">{user?.name}</div>
                       <div className="text-sm text-theme-text-secondary truncate">{user?.email}</div>
+=======
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getAvatarColor(user?.name)} flex items-center justify-center text-white text-lg font-bold shadow-lg`}>
+                      {getUserInitials(user?.name)}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-theme-text">{user?.name}</div>
+                      <div className="text-sm text-theme-text-secondary">{user?.email}</div>
+>>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
                       <div className="text-xs text-primary-500 font-medium capitalize flex items-center space-x-1 mt-1">
                         <FiShield className="w-3 h-3 flex-shrink-0" />
                         <span>{user?.role}</span>
@@ -360,7 +403,7 @@ function Navbar() {
                   </Link>
 
                   <Link
-                    to={`/profile/${user?._id}`}
+                    to="/profile"
                     onClick={(e) => {
                       e.stopPropagation()
                       closeMenu()
