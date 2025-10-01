@@ -79,7 +79,9 @@ const uploadAvatar = async (file, token) => {
   const formData = new FormData()
   formData.append('avatar', file)
   
-  const response = await fetch('/api/upload/avatar', {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  
+  const response = await fetch(`${API_URL}/upload/avatar`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`

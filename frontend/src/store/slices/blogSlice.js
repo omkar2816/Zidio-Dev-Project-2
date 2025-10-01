@@ -30,8 +30,7 @@ export const getBlog = createAsyncThunk("blog/get", async (id, thunkAPI) => {
 
 export const createBlog = createAsyncThunk("blog/create", async (blogData, thunkAPI) => {
   try {
-    const token = thunkAPI.getState().auth.user.token
-    return await blogService.createBlog(blogData, token)
+    return await blogService.createBlog(blogData)
   } catch (error) {
     const message = error.response?.data?.message || error.message
     return thunkAPI.rejectWithValue(message)
@@ -40,8 +39,7 @@ export const createBlog = createAsyncThunk("blog/create", async (blogData, thunk
 
 export const updateBlog = createAsyncThunk("blog/update", async ({ id, blogData }, thunkAPI) => {
   try {
-    const token = thunkAPI.getState().auth.user.token
-    return await blogService.updateBlog(id, blogData, token)
+    return await blogService.updateBlog(id, blogData)
   } catch (error) {
     const message = error.response?.data?.message || error.message
     return thunkAPI.rejectWithValue(message)

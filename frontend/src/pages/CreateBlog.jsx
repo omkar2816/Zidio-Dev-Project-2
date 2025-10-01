@@ -4,8 +4,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
 import { createBlog } from "../store/slices/blogSlice"
-import ReactQuill from "react-quill"
-import "react-quill/dist/quill.snow.css"
+import CustomReactQuill from "../components/CustomReactQuill"
 import toast from "react-hot-toast"
 import { isValidImageUrl, validateImageFile, uploadImageFile, convertGooglePhotosUrl, isGooglePhotosShareLink } from "../utils/imageUtils"
 
@@ -120,54 +119,78 @@ function CreateBlog() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!formData.title || !formData.content) {
-      toast.error("Please fill in all required fields")
-      return
-    }
-
-    if (uploadType === "url" && formData.image && !isValidImageUrl(formData.image)) {
-      toast.error("Please provide a valid image URL")
-      return
-    }
-
-    let imageUrl = formData.image
-
-    // Convert Google Photos/Drive URLs
-    if (imageUrl) {
-      imageUrl = convertGooglePhotosUrl(imageUrl)
-    }
-
-    // If file is selected, upload it first
-    if (uploadType === "file" && selectedFile) {
-      try {
-        imageUrl = await uploadImageFile(selectedFile)
-      } catch (error) {
-        if (error.message.includes('Authentication failed')) {
-          toast.error("Your session has expired. Please login again.")
-          // You might want to redirect to login page here
-        } else {
-          toast.error(`Failed to upload image: ${error.message}`)
+    // Suppress any ReactQuill warnings during form submission
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    
+    try {
+      // Temporarily suppress ReactQuill warnings during submission
+      console.warn = (...args) => {
+        const message = String(args[0] || '');
+        if (!message.includes('findDOMNode') && !message.includes('ReactQuill')) {
+          originalWarn.apply(console, args);
         }
-        console.error("Upload error:", error)
+      };
+      
+      console.error = (...args) => {
+        const message = String(args[0] || '');
+        if (!message.includes('findDOMNode') && !message.includes('ReactQuill')) {
+          originalError.apply(console, args);
+        }
+      };
+
+      if (!formData.title || !formData.content) {
+        toast.error("Please fill in all required fields")
         return
       }
-    }
 
-    const blogData = {
-      ...formData,
-      image: imageUrl,
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-    }
+      if (uploadType === "url" && formData.image && !isValidImageUrl(formData.image)) {
+        toast.error("Please provide a valid image URL")
+        return
+      }
 
-    try {
+      let imageUrl = formData.image
+
+      // Convert Google Photos/Drive URLs
+      if (imageUrl) {
+        imageUrl = convertGooglePhotosUrl(imageUrl)
+      }
+
+      // If file is selected, upload it first
+      if (uploadType === "file" && selectedFile) {
+        try {
+          imageUrl = await uploadImageFile(selectedFile)
+        } catch (error) {
+          if (error.message.includes('Authentication failed')) {
+            toast.error("Your session has expired. Please login again.")
+            // You might want to redirect to login page here
+          } else {
+            toast.error(`Failed to upload image: ${error.message}`)
+          }
+          console.error("Upload error:", error)
+          return
+        }
+      }
+
+      const blogData = {
+        ...formData,
+        image: imageUrl,
+        tags: formData.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      }
+
       await dispatch(createBlog(blogData)).unwrap()
       toast.success("Blog created successfully!")
       navigate("/dashboard")
     } catch (error) {
       toast.error(error || "Failed to create blog")
+      console.error("Blog creation error:", error)
+    } finally {
+      // Restore original console methods
+      console.warn = originalWarn;
+      console.error = originalError;
     }
   }
 
@@ -321,8 +344,7 @@ function CreateBlog() {
 
         <div>
           <label className="block text-sm font-medium text-theme-text-secondary mb-2">Content *</label>
-          <ReactQuill
-            theme="snow"
+          <CustomReactQuill
             value={formData.content}
             onChange={handleContentChange}
             modules={modules}

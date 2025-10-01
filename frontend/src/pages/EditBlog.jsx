@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { getBlog, updateBlog } from "../store/slices/blogSlice"
-import ReactQuill from "react-quill"
-import "react-quill/dist/quill.snow.css"
+import CustomReactQuill from "../components/CustomReactQuill"
 import toast from "react-hot-toast"
 import { isValidImageUrl, validateImageFile, uploadImageFile, convertGooglePhotosUrl, isGooglePhotosShareLink } from "../utils/imageUtils"
 
@@ -294,8 +293,7 @@ function EditBlog() {
 
         <div>
           <label className="block text-sm font-medium text-theme-text-secondary mb-2">Content *</label>
-          <ReactQuill
-            theme="snow"
+          <CustomReactQuill
             value={formData.content}
             onChange={handleContentChange}
             modules={modules}
