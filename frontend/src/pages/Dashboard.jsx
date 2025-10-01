@@ -16,8 +16,15 @@ function Dashboard() {
   const userBlogs = blogs.filter((blog) => blog.author?._id === user?._id)
 
   useEffect(() => {
+    console.log("Dashboard: Fetching all blogs")
     dispatch(getBlogs())
   }, [dispatch])
+
+  useEffect(() => {
+    console.log("Dashboard: All blogs:", blogs?.length, blogs)
+    console.log("Dashboard: User blogs:", userBlogs?.length, userBlogs)
+    console.log("Dashboard: Current user ID:", user?._id)
+  }, [blogs, userBlogs, user])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

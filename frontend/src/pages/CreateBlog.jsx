@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from "react-redux"
-import { createBlog } from "../store/slices/blogSlice"
+import { createBlog, getBlogs } from "../store/slices/blogSlice"
 import TiptapEditor from "../components/TiptapEditor"
 import "../styles/tiptap.css"
 import toast from "react-hot-toast"
@@ -153,10 +153,17 @@ function CreateBlog() {
     }
 
     try {
-      await dispatch(createBlog(blogData)).unwrap()
+      console.log("Creating blog with data:", blogData)
+      const result = await dispatch(createBlog(blogData)).unwrap()
+      console.log("Blog created successfully:", result)
       toast.success("Blog created successfully!")
+      
+      // Fetch updated blogs list
+      dispatch(getBlogs())
+      
       navigate("/dashboard")
     } catch (error) {
+      console.error("Failed to create blog:", error)
       toast.error(error || "Failed to create blog")
     }
   }

@@ -34,8 +34,13 @@ function Home() {
   }
 
   useEffect(() => {
+    console.log("Home: Fetching blogs with filters:", filters)
     dispatch(getBlogs(filters))
   }, [dispatch, filters])
+
+  useEffect(() => {
+    console.log("Home: Blogs updated:", blogs?.length, blogs)
+  }, [blogs])
 
   const handleSearch = (searchTerm, expandedTerms = []) => {
     setCurrentSearchTerms(searchTerm ? [searchTerm] : [])

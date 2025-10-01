@@ -5,9 +5,17 @@ import Blog from "../models/Blog.js"
 // @route   GET /api/blogs
 // @access  Public
 export const getBlogs = asyncHandler(async (req, res) => {
-  const { search, expandedTerms, category, author, sortBy = 'createdAt' } = req.query
+  const { search, expandedTerms, category, author, sortBy = 'createdAt', includeStatus } = req.query
+
+  console.log("=== GET BLOGS REQUEST ===")
+  console.log("Query params:", { search, category, author, sortBy, includeStatus })
 
   const query = {}
+
+  // Only show published blogs by default (unless includeStatus=all for admin)
+  if (includeStatus !== 'all') {
+    query.status = 'published'
+  }
 
   if (search) {
     // Parse expanded terms if provided (from frontend synonym service)
@@ -71,6 +79,9 @@ export const getBlogs = asyncHandler(async (req, res) => {
       .sort(sortCriteria)
       .lean()
 
+    console.log("Found blogs in database:", blogs.length)
+    console.log("First 3 blog titles:", blogs.slice(0, 3).map(b => b.title))
+
     // If we have search terms, calculate relevance scores and re-sort
     if (search && blogs.length > 0) {
       blogs = blogs.map(blog => {
@@ -123,8 +134,10 @@ export const getBlogs = asyncHandler(async (req, res) => {
       })
     }
 
+    console.log("Returning blogs count:", blogs.length)
     res.json(blogs)
   } catch (error) {
+    console.error("Error in getBlogs:", error)
     res.status(500)
     throw new Error(`Error fetching blogs: ${error.message}`)
   }
@@ -148,23 +161,38 @@ export const getBlog = asyncHandler(async (req, res) => {
 // @route   POST /api/blogs
 // @access  Private
 export const createBlog = asyncHandler(async (req, res) => {
-  const { title, content, category, tags, image } = req.body
+  const { title, content, category, tags, image, status } = req.body
+
+  console.log("=== CREATE BLOG REQUEST ===")
+  console.log("User:", req.user?.name, "ID:", req.user?._id)
+  console.log("Blog data:", { title, content: content?.substring(0, 100) + "...", category, tags, image, status })
 
   if (!title || !content) {
     res.status(400)
     throw new Error("Please add title and content")
   }
 
-  const blog = await Blog.create({
+  const blogData = {
     title,
     content,
     category,
     tags,
     image,
     author: req.user._id,
-  })
+    status: status || "published", // Default to published if not specified
+  }
+
+  console.log("Creating blog with data:", blogData)
+
+  const blog = await Blog.create(blogData)
+  console.log("Blog created in DB:", blog._id, "with slug:", blog.slug)
 
   const populatedBlog = await Blog.findById(blog._id).populate("author", "name email avatar")
+  console.log("Populated blog:", populatedBlog)
+
+  // Count total blogs after creation
+  const totalBlogs = await Blog.countDocuments()
+  console.log("Total blogs in database:", totalBlogs)
 
   res.status(201).json(populatedBlog)
 })
