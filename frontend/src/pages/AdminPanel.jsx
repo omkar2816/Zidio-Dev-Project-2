@@ -14,11 +14,11 @@ import {
   FiEdit,
   FiTrendingUp,
   FiClock,
-  FiBarChart3
+  FiBarChart
 } from "react-icons/fi"
 import AnalyticsChart from "../components/AnalyticsChart"
 
-function AdminPanel() {
+function AdminDashboard() {
   const { user } = useSelector((state) => state.auth)
   const [users, setUsers] = useState([])
   const [blogs, setBlogs] = useState([])
@@ -288,7 +288,7 @@ function AdminPanel() {
 
               <div className="card-modern p-6">
                 <h3 className="text-lg font-semibold text-theme-text mb-4 flex items-center">
-                  <FiBarChart3 className="mr-2" />
+                  <FiBarChart className="mr-2" />
                   Content Statistics
                 </h3>
                 <div className="space-y-4">
@@ -565,4 +565,4 @@ function AdminPanel() {
   )
 }
 
-export default AdminPanel
+export default AdminDashboard

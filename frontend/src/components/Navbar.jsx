@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { logout } from "../store/slices/authSlice"
 import { useTheme } from "../contexts/ThemeContext"
+import { useSidebar } from "../contexts/SidebarContext"
 import { 
   FiLogOut, 
   FiUser, 
@@ -21,14 +22,16 @@ import {
   FiEye,
   FiBell
 } from "react-icons/fi"
-import SuperAdminPanel from "../pages/SuperAdminPanel"
-import AdminPanel from "../pages/AdminPanel"
+import SuperAdminDashboard from "../pages/SuperAdminDashboard"
+import AdminDashboard from "../pages/AdminDashboard"
 
 function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
   const { theme, toggleTheme } = useTheme()
+  const { sidebarWidthValue, isMobile, isCollapsed } = useSidebar()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const profileDropdownRef = useRef(null)
@@ -66,6 +69,11 @@ function Navbar() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
+  // Check if link is active
+  const isActiveLink = (path) => {
+    return location.pathname === path
+  }
+
   // Generate consistent avatar color based on name
   const getAvatarColor = (name) => {
     if (!name) return 'from-gray-400 to-gray-500'
@@ -97,7 +105,9 @@ function Navbar() {
   }
 
   return (
-    <nav className="bg-theme-bg/90 backdrop-blur-xl border-b border-theme-border/60 sticky top-0 z-50 transition-all duration-300 shadow-sm">
+    <nav 
+      className="bg-theme-bg/90 backdrop-blur-xl border-b border-theme-border/60 fixed top-0 w-full z-40 transition-all duration-300 shadow-sm"
+    >
       <div className="w-full px-6">
         <div className="flex justify-between items-center h-18 py-2">
           {/* Logo */}
@@ -114,7 +124,11 @@ function Navbar() {
           <div className="hidden md:flex items-center space-x-2">
             <Link 
               to="/" 
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200 group"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 group ${
+                isActiveLink('/') 
+                  ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400' 
+                  : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary'
+              }`}
             >
               <FiHome className="group-hover:scale-110 transition-transform duration-200" />
               <span>Home</span>
@@ -123,26 +137,24 @@ function Navbar() {
             {user ? (
               <>
                 <Link
-                  to={user?.role === "superadmin" ? "/superadmin" : user?.role === "admin" ? "/admin" : "/dashboard"}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200 group"
+                  to={user?.role === "admin" ? "/admin" : "/dashboard"}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 group ${
+                    isActiveLink(user?.role === "admin" ? "/admin" : "/dashboard")
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400' 
+                      : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary'
+                  }`}
                 >
                   <FiUser className="group-hover:scale-110 transition-transform duration-200" />
-                  <span>{user?.role === "superadmin" ? "Super Admin Panel" : user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
+                  <span>{user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
                 </Link>
-
-                {(user.role === "admin" || user.role === "superadmin") && (
-                  <Link 
-                    to={user.role === "superadmin" ? "/superadmin" : "/admin"} 
-                    className="flex items-center space-x-2 px-3 py-2 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200 group"
-                  >
-                    <FiShield className={`group-hover:scale-110 transition-transform duration-200 ${user.role === "superadmin" ? "text-purple-500" : ""}`} />
-                    <span>{user.role === "superadmin" ? "Super Admin" : "Admin"}</span>
-                  </Link>
-                )}
 
                 <Link 
                   to="/create" 
-                  className="flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-200 hover:scale-105 hover:shadow-lg group"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg group ${
+                    isActiveLink('/create')
+                      ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg'
+                      : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700'
+                  }`}
                 >
                   <FiPlus className="group-hover:rotate-90 transition-transform duration-200" />
                   <span>Create</span>
@@ -321,7 +333,11 @@ function Navbar() {
               <Link 
                 to="/" 
                 onClick={closeMenu}
-                className="flex items-center space-x-3 px-3 py-3 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200"
+                className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                  isActiveLink('/') 
+                    ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400' 
+                    : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary'
+                }`}
               >
                 <FiHome />
                 <span>Home</span>
@@ -330,29 +346,26 @@ function Navbar() {
               {user ? (
                 <>
                   <Link
-                    to={user?.role === "superadmin" ? "/superadmin" : user?.role === "admin" ? "/admin" : "/dashboard"}
+                    to={user?.role === "admin" ? "/admin" : "/dashboard"}
                     onClick={closeMenu}
-                    className="flex items-center space-x-3 px-3 py-3 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200"
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                      isActiveLink(user?.role === "admin" ? "/admin" : "/dashboard")
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400' 
+                        : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary'
+                    }`}
                   >
                     <FiUser />
-                    <span>{user?.role === "superadmin" ? "Super Admin Panel" : user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
+                    <span>{user?.role === "admin" ? "Admin Panel" : "Dashboard"}</span>
                   </Link>
-
-                  {(user.role === "admin" || user.role === "superadmin") && (
-                    <Link 
-                      to={user.role === "superadmin" ? "/superadmin" : "/admin"}
-                      onClick={closeMenu}
-                      className="flex items-center space-x-3 px-3 py-3 rounded-lg text-theme-text-secondary hover:text-theme-text hover:bg-theme-bg-secondary transition-all duration-200"
-                    >
-                      <FiShield className={user.role === "superadmin" ? "text-purple-500" : ""} />
-                      <span>{user.role === "superadmin" ? "Super Admin Panel" : "Admin Panel"}</span>
-                    </Link>
-                  )}
 
                   <Link 
                     to="/create"
                     onClick={closeMenu}
-                    className="flex items-center space-x-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-3 rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all duration-200"
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                      isActiveLink('/create')
+                        ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
+                        : 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700'
+                    }`}
                   >
                     <FiPlus />
                     <span>Create Blog</span>

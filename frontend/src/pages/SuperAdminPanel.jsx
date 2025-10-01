@@ -14,15 +14,15 @@ import {
   FiEdit,
   FiTrendingUp,
   FiClock,
-  FiBarChart3,
+  FiBarChart,
   FiSettings,
   FiDatabase,
   FiServer
 } from "react-icons/fi"
-import AdminPanel from "./AdminPanel"
+import AdminDashboard from "./AdminDashboard"
 import AnalyticsChart from "../components/AnalyticsChart"
 
-function SuperAdminPanel() {
+function SuperAdminDashboard() {
   const { user } = useSelector((state) => state.auth)
   const [systemStats, setSystemStats] = useState(null)
   const [adminUsers, setAdminUsers] = useState([])
@@ -172,27 +172,27 @@ function SuperAdminPanel() {
   )
 
   if (user.role !== 'superadmin') {
-    return <AdminPanel />
+    return <AdminDashboard />
   }
 
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-red-50">
+    <div className="min-h-screen bg-theme-bg transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-red-600 bg-clip-text text-transparent mb-2">
-            Super Admin Control Center
+            Super Admin Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-theme-text-secondary">
             Complete system oversight and administration • Welcome, {user.name}
           </p>
         </div>
 
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-theme-border">
             <nav className="-mb-px flex space-x-8">
               {['overview', 'admin-requests', 'admin-management', 'system-health', 'standard-admin'].map((tab) => (
                 <button
@@ -201,7 +201,7 @@ function SuperAdminPanel() {
                   className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-colors duration-200 ${
                     activeTab === tab
                       ? 'border-purple-500 text-purple-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-theme-text-secondary hover:text-theme-text hover:border-theme-border'
                   }`}
                 >
                   {tab.replace('-', ' ')}
@@ -216,14 +216,14 @@ function SuperAdminPanel() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading SuperAdmin Dashboard...</p>
+              <p className="text-theme-text-secondary">Loading SuperAdmin Dashboard...</p>
             </div>
           </div>
         )}
 
         {/* Offline Mode Banner */}
         {!loading && hasError && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,8 +231,8 @@ function SuperAdminPanel() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-yellow-800">Offline Mode</h3>
-                <p className="text-sm text-yellow-700">Backend server is not connected. Some features may be limited.</p>
+                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Offline Mode</h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">Backend server is not connected. Some features may be limited.</p>
               </div>
             </div>
           </div>
@@ -313,29 +313,91 @@ function SuperAdminPanel() {
               />
             </div>
 
+            {/* System Performance Metrics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="card-modern p-6">
+                <h3 className="text-lg font-semibold text-theme-text mb-6">System Performance</h3>
+                <div className="space-y-4">
+                  {[
+                    { name: "CPU Usage", value: 45, color: "bg-blue-500" },
+                    { name: "Memory Usage", value: 72, color: "bg-green-500" },
+                    { name: "Disk Usage", value: 38, color: "bg-yellow-500" },
+                    { name: "Network I/O", value: 89, color: "bg-purple-500" }
+                  ].map((metric, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-theme-text-secondary text-sm">{metric.name}</span>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-24 bg-theme-bg-tertiary rounded-full h-2">
+                          <div 
+                            className={`h-2 ${metric.color} rounded-full`}
+                            style={{ width: `${metric.value}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-theme-text text-sm font-medium w-10">{metric.value}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card-modern p-6">
+                <h3 className="text-lg font-semibold text-theme-text mb-6">Recent Admin Actions</h3>
+                <div className="space-y-3">
+                  {[
+                    { action: "User John Doe promoted to Admin", admin: "SuperAdmin", time: "5 minutes ago" },
+                    { action: "System backup completed", admin: "System", time: "1 hour ago" },
+                    { action: "Security scan initiated", admin: "SuperAdmin", time: "3 hours ago" },
+                    { action: "Database maintenance", admin: "System", time: "6 hours ago" },
+                    { action: "New admin Alice Johnson added", admin: "SuperAdmin", time: "1 day ago" }
+                  ].map((activity, index) => (
+                    <div key={index} className="flex items-start space-x-3 p-3 hover:bg-theme-bg-secondary rounded-lg transition-colors">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-theme-text text-sm">{activity.action}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-xs text-theme-text-secondary">by {activity.admin}</span>
+                          <span className="text-xs text-theme-text-secondary">•</span>
+                          <span className="text-xs text-theme-text-secondary">{activity.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Quick Actions */}
             <div className="card-modern p-6">
               <h3 className="text-lg font-semibold text-theme-text mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={() => setActiveTab('admin-management')}
+                  className="p-4 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors text-left"
+                >
                   <FiUsers className="text-purple-600 text-xl mb-2" />
                   <p className="font-medium text-theme-text">Manage Admins</p>
-                  <p className="text-sm text-gray-500">Add or remove admin privileges</p>
+                  <p className="text-sm text-theme-text-secondary">Add or remove admin privileges</p>
                 </button>
-                <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={() => setActiveTab('system-health')}
+                  className="p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-left"
+                >
                   <FiSettings className="text-blue-600 text-xl mb-2" />
-                  <p className="font-medium text-theme-text">System Settings</p>
-                  <p className="text-sm text-gray-500">Configure system parameters</p>
+                  <p className="font-medium text-theme-text">System Health</p>
+                  <p className="text-sm text-theme-text-secondary">Monitor system status</p>
                 </button>
-                <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left">
-                  <FiBarChart3 className="text-green-600 text-xl mb-2" />
+                <button className="p-4 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors text-left">
+                  <FiBarChart className="text-green-600 text-xl mb-2" />
                   <p className="font-medium text-theme-text">View Analytics</p>
-                  <p className="text-sm text-gray-500">Detailed system analytics</p>
+                  <p className="text-sm text-theme-text-secondary">Detailed system analytics</p>
                 </button>
-                <button className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-left">
+                <button 
+                  onClick={() => setActiveTab('admin-requests')}
+                  className="p-4 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors text-left"
+                >
                   <FiActivity className="text-orange-600 text-xl mb-2" />
-                  <p className="font-medium text-theme-text">Activity Logs</p>
-                  <p className="text-sm text-gray-500">Monitor system activity</p>
+                  <p className="font-medium text-theme-text">Admin Requests</p>
+                  <p className="text-sm text-theme-text-secondary">Manage pending requests</p>
                 </button>
               </div>
             </div>
@@ -639,7 +701,7 @@ function SuperAdminPanel() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Standard Admin Dashboard</h2>
               <p className="text-gray-600">View the system from a regular admin perspective</p>
             </div>
-            <AdminPanel />
+            <AdminDashboard />
           </div>
         )}
       </div>
@@ -647,4 +709,4 @@ function SuperAdminPanel() {
   )
 }
 
-export default SuperAdminPanel
+export default SuperAdminDashboard
