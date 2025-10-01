@@ -50,6 +50,13 @@ const authSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(state.user))
       }
     },
+    updateUserProfile: (state, action) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload }
+        // Update localStorage as well
+        localStorage.setItem("user", JSON.stringify(state.user))
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -85,5 +92,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { reset, updateUserBookmarks } = authSlice.actions
+export const { reset, updateUserBookmarks, updateUserProfile } = authSlice.actions
 export default authSlice.reducer

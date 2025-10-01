@@ -45,6 +45,12 @@ function Sidebar() {
         roles: ["user", "admin", "superadmin"]
       },
       {
+        label: "Dashboard", 
+        icon: FiGrid,
+        path: "/dashboard",
+        roles: ["user"]
+      },
+      {
         label: "Create Blog",
         icon: FiPlusCircle,
         path: "/create", 
@@ -54,7 +60,7 @@ function Sidebar() {
         label: "My Blogs",
         icon: FiFileText,
         path: "/dashboard",
-        roles: ["user", "admin", "superadmin"]
+        roles: ["admin", "superadmin"]
       },
       {
         label: "Bookmarks",
@@ -66,14 +72,7 @@ function Sidebar() {
 
     // Role-specific items
     const roleItems = {
-      user: [
-        {
-          label: "Dashboard", 
-          icon: FiGrid,
-          path: "/dashboard",
-          roles: ["user"]
-        }
-      ],
+      user: [],
       admin: [
         {
           label: "Admin Dashboard",
@@ -101,12 +100,6 @@ function Sidebar() {
     const userRoleItems = roleItems[user?.role] || []
     
     const endItems = [
-      {
-        label: "Profile",
-        icon: FiUser,
-        path: "/profile",
-        roles: ["user", "admin", "superadmin"]
-      },
       {
         label: "Settings",
         icon: FiSettings,

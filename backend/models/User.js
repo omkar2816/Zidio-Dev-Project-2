@@ -29,6 +29,36 @@ const userSchema = mongoose.Schema(
       maxlength: 500,
       default: "",
     },
+    location: {
+      type: String,
+      maxlength: 100,
+      default: "",
+    },
+    phone: {
+      type: String,
+      maxlength: 20,
+      default: "",
+    },
+    website: {
+      type: String,
+      maxlength: 200,
+      default: "",
+    },
+    linkedin: {
+      type: String,
+      maxlength: 200,
+      default: "",
+    },
+    github: {
+      type: String,
+      maxlength: 200,
+      default: "",
+    },
+    twitter: {
+      type: String,
+      maxlength: 200,
+      default: "",
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -85,6 +115,84 @@ const userSchema = mongoose.Schema(
         ref: "Blog"
       }
     ],
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    settings: {
+      notifications: {
+        emailNotifications: {
+          type: Boolean,
+          default: true
+        },
+        pushNotifications: {
+          type: Boolean,
+          default: false
+        },
+        marketingEmails: {
+          type: Boolean,
+          default: false
+        },
+        weeklyDigest: {
+          type: Boolean,
+          default: true
+        },
+        commentNotifications: {
+          type: Boolean,
+          default: true
+        },
+        likeNotifications: {
+          type: Boolean,
+          default: false
+        }
+      },
+      privacy: {
+        publicProfile: {
+          type: Boolean,
+          default: true
+        },
+        showEmail: {
+          type: Boolean,
+          default: false
+        },
+        showOnlineStatus: {
+          type: Boolean,
+          default: true
+        },
+        twoFactorAuth: {
+          type: Boolean,
+          default: false
+        }
+      },
+      preferences: {
+        language: {
+          type: String,
+          default: 'en',
+          enum: ['en', 'es', 'fr', 'de', 'it', 'pt']
+        },
+        timezone: {
+          type: String,
+          default: 'UTC',
+          enum: ['UTC', 'EST', 'PST', 'GMT', 'CET', 'JST']
+        },
+        autoSave: {
+          type: Boolean,
+          default: true
+        },
+        compactView: {
+          type: Boolean,
+          default: false
+        }
+      }
+    },
   },
   {
     timestamps: true,
