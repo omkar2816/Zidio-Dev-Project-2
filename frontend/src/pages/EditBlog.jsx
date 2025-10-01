@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { getBlog, updateBlog } from "../store/slices/blogSlice"
-import ReactQuill from "react-quill"
-import "react-quill/dist/quill.snow.css"
+import TiptapEditor from "../components/TiptapEditor"
+import "../styles/tiptap.css"
 import toast from "react-hot-toast"
 import { isValidImageUrl, validateImageFile, uploadImageFile, convertGooglePhotosUrl, isGooglePhotosShareLink } from "../utils/imageUtils"
 
@@ -44,16 +44,6 @@ function EditBlog() {
       })
     }
   }, [blog])
-
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image"],
-      ["clean"],
-    ],
-  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -294,12 +284,10 @@ function EditBlog() {
 
         <div>
           <label className="block text-sm font-medium text-theme-text-secondary mb-2">Content *</label>
-          <ReactQuill
-            theme="snow"
-            value={formData.content}
+          <TiptapEditor
+            content={formData.content}
             onChange={handleContentChange}
-            modules={modules}
-            className="bg-theme-bg [&_.ql-editor]:bg-theme-bg-secondary [&_.ql-editor]:text-theme-text [&_.ql-toolbar]:bg-theme-bg-secondary [&_.ql-toolbar]:border-theme-border"
+            placeholder="Edit your blog content here..."
           />
         </div>
 
