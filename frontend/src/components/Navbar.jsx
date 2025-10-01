@@ -149,7 +149,7 @@ function Navbar() {
                     }}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-theme-bg-secondary transition-all duration-200 group"
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-theme-bg-secondary transition-all duration-200 group relative z-50"
                   >
                     <Avatar 
                       user={user} 
@@ -165,26 +165,30 @@ function Navbar() {
                   {/* Dropdown Menu */}
                   {isProfileDropdownOpen && (
                     <div 
-                      className="absolute right-0 mt-2 w-72 bg-theme-bg/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-theme-border/60 py-2 z-50 animate-scale-in"
+                      className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-[9999] animate-scale-in"
                       onMouseEnter={handleMouseEnter}
                       onMouseLeave={handleMouseLeave}
+                      style={{ 
+                        transform: 'translateZ(0)',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                      }}
                     >
                       {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-theme-border/50">
-                        <div className="flex items-center space-x-3">
+                      <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30">
+                        <div className="flex items-center space-x-4">
                           <Avatar 
                             user={user} 
-                            size="lg" 
-                            className="shadow-lg"
+                            size="xl" 
+                            className="shadow-lg ring-2 ring-primary-500/30"
                           />
-                          <div>
-                            <div className="font-semibold text-theme-text">{user?.name}</div>
-                            <div className="text-sm text-theme-text-secondary flex items-center space-x-1">
-                              <FiMail className="w-3 h-3" />
-                              <span>{user?.email}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 dark:text-white text-base truncate">{user?.name}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center space-x-1 mt-1">
+                              <FiMail className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{user?.email}</span>
                             </div>
-                            <div className="text-xs text-primary-500 font-medium capitalize flex items-center space-x-1 mt-1">
-                              <FiShield className="w-3 h-3" />
+                            <div className="text-xs text-primary-600 dark:text-primary-400 font-medium capitalize flex items-center space-x-1 mt-1">
+                              <FiShield className="w-3 h-3 flex-shrink-0" />
                               <span>{user?.role}</span>
                             </div>
                           </div>
@@ -199,10 +203,10 @@ function Navbar() {
                             e.stopPropagation()
                             setIsProfileDropdownOpen(false)
                           }}
-                          className="flex items-center space-x-3 px-4 py-2 hover:bg-theme-bg-secondary transition-all duration-200 text-theme-text-secondary hover:text-theme-text group"
+                          className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white group"
                         >
                           <FiUser className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                          <span>View Profile</span>
+                          <span className="font-medium">View Profile</span>
                         </Link>
                         
                         <Link
@@ -211,38 +215,38 @@ function Navbar() {
                             e.stopPropagation()
                             setIsProfileDropdownOpen(false)
                           }}
-                          className="flex items-center space-x-3 px-4 py-2 hover:bg-theme-bg-secondary transition-all duration-200 text-theme-text-secondary hover:text-theme-text group"
+                          className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white group"
                         >
                           <FiSettings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-200" />
-                          <span>Settings</span>
+                          <span className="font-medium">Settings</span>
                         </Link>
 
                         <button
                           onClick={toggleTheme}
-                          className="flex items-center space-x-3 px-4 py-2 hover:bg-theme-bg-secondary transition-all duration-200 text-theme-text-secondary hover:text-theme-text group w-full"
+                          className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white group w-full"
                         >
                           {theme === 'dark' ? (
                             <>
                               <FiSun className="w-4 h-4 group-hover:rotate-180 transition-transform duration-200" />
-                              <span>Light Mode</span>
+                              <span className="font-medium">Light Mode</span>
                             </>
                           ) : (
                             <>
                               <FiMoon className="w-4 h-4 group-hover:-rotate-12 transition-transform duration-200" />
-                              <span>Dark Mode</span>
+                              <span className="font-medium">Dark Mode</span>
                             </>
                           )}
                         </button>
                       </div>
 
                       {/* Logout */}
-                      <div className="border-t border-theme-border/50 pt-2">
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 text-theme-text-secondary hover:text-red-500 group w-full"
+                          className="flex items-center space-x-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 group w-full"
                         >
                           <FiLogOut className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                          <span>Sign Out</span>
+                          <span className="font-medium">Sign Out</span>
                         </button>
                       </div>
                     </div>
@@ -296,17 +300,17 @@ function Navbar() {
             <div className="px-4 py-6 space-y-3">
               {user && (
                 <div className="bg-theme-bg-secondary rounded-xl p-4 mb-4 border border-theme-border/50">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <Avatar 
                       user={user} 
-                      size="lg" 
-                      className="shadow-lg"
+                      size="xl" 
+                      className="shadow-lg ring-2 ring-primary-500/20"
                     />
-                    <div>
-                      <div className="font-semibold text-theme-text">{user?.name}</div>
-                      <div className="text-sm text-theme-text-secondary">{user?.email}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-theme-text truncate">{user?.name}</div>
+                      <div className="text-sm text-theme-text-secondary truncate">{user?.email}</div>
                       <div className="text-xs text-primary-500 font-medium capitalize flex items-center space-x-1 mt-1">
-                        <FiShield className="w-3 h-3" />
+                        <FiShield className="w-3 h-3 flex-shrink-0" />
                         <span>{user?.role}</span>
                       </div>
                     </div>
