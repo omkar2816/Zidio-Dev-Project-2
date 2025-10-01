@@ -79,6 +79,12 @@ const userSchema = mongoose.Schema(
         default: ""
       }
     },
+    bookmarks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog"
+      }
+    ],
   },
   {
     timestamps: true,

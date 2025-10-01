@@ -288,3 +288,52 @@ export const deleteComment = asyncHandler(async (req, res) => {
 
   res.json({ id: req.params.id })
 })
+
+// @desc    Toggle bookmark a blog
+// @route   PUT /api/blogs/:id/bookmark
+// @access  Private
+export const toggleBookmark = asyncHandler(async (req, res) => {
+  const blog = await Blog.findById(req.params.id)
+
+  if (!blog) {
+    res.status(404)
+    throw new Error("Blog not found")
+  }
+
+  const user = req.user
+
+  // Check if blog is already bookmarked
+  const isBookmarked = user.bookmarks.includes(req.params.id)
+
+  if (isBookmarked) {
+    // Remove from bookmarks
+    user.bookmarks = user.bookmarks.filter(
+      (bookmarkId) => bookmarkId.toString() !== req.params.id
+    )
+  } else {
+    // Add to bookmarks
+    user.bookmarks.push(req.params.id)
+  }
+
+  await user.save()
+
+  res.json({
+    isBookmarked: !isBookmarked,
+    message: isBookmarked ? "Bookmark removed" : "Blog bookmarked"
+  })
+})
+
+// @desc    Get user's bookmarked blogs
+// @route   GET /api/blogs/bookmarks
+// @access  Private
+export const getBookmarkedBlogs = asyncHandler(async (req, res) => {
+  const user = await req.user.populate({
+    path: 'bookmarks',
+    populate: {
+      path: 'author',
+      select: 'name email'
+    }
+  })
+
+  res.json(user.bookmarks)
+})

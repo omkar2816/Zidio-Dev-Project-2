@@ -6,6 +6,8 @@ import { useTheme } from "../contexts/ThemeContext"
 import blogService from "../services/blogService"
 import toast from "react-hot-toast"
 import { FiHeart, FiEdit, FiTrash2, FiUser, FiCalendar, FiClock, FiEye, FiShare2, FiCheck, FiX } from "react-icons/fi"
+import ShareButton from "../components/ShareButton"
+import BookmarkButton from "../components/BookmarkButton"
 
 function BlogDetails() {
   const { id } = useParams()
@@ -21,6 +23,7 @@ function BlogDetails() {
   const [comments, setComments] = useState([])
   const [editingCommentId, setEditingCommentId] = useState(null)
   const [editingCommentText, setEditingCommentText] = useState("")
+  const [isBookmarked, setIsBookmarked] = useState(false)
 
   useEffect(() => {
     dispatch(getBlog(id))
@@ -31,8 +34,15 @@ function BlogDetails() {
       setLikesCount(blog.likes?.length || 0)
       setLiked(blog.likes?.includes(user?._id))
       setComments(blog.comments || [])
+      // Check if blog is bookmarked by current user
+      setIsBookmarked(user?.bookmarks?.includes(blog._id) || false)
     }
   }, [blog, user])
+
+  // Additional useEffect to sync bookmark state when user bookmarks change
+  useEffect(() => {
+    setIsBookmarked(user?.bookmarks?.includes(blog?._id) || false)
+  }, [user?.bookmarks, blog?._id])
 
   const handleLike = async () => {
     if (!user) {
@@ -151,7 +161,7 @@ function BlogDetails() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-theme-bg transition-colors duration-300">
+    <div className="min-h-screen">
       {/* Background Pattern */}
       <div className="fixed inset-0 pattern-dots opacity-10 pointer-events-none"></div>
       
@@ -266,10 +276,13 @@ function BlogDetails() {
                     <span className="font-medium">{likesCount}</span>
                   </button>
                   
-                  <button className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-theme-bg-secondary text-theme-text-secondary hover:text-theme-text transition-colors duration-200">
-                    <FiShare2 className="w-4 h-4" />
-                    <span className="font-medium">Share</span>
-                  </button>
+                  <BookmarkButton 
+                    blog={blog} 
+                    user={user} 
+                    isBookmarked={isBookmarked}
+                  />
+                  
+                  <ShareButton blog={blog} />
                 </div>
               </div>
             </div>

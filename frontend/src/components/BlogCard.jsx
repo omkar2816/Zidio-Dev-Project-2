@@ -1,8 +1,15 @@
 import { Link } from "react-router-dom"
 import { FiHeart, FiMessageCircle, FiUser, FiCalendar, FiClock, FiEye, FiBookmark, FiSearch } from "react-icons/fi"
 import { highlightSearchTerms } from "../services/synonymService"
+import { useState, useEffect } from "react"
+import { useDispatch } from "react-redux"
+import { updateUserBookmarks } from "../store/slices/authSlice"
+import blogService from "../services/blogService"
+import toast from "react-hot-toast"
 
-function BlogCard({ blog, searchTerms = [], showRelevanceScore = false }) {
+function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = null }) {
+  const dispatch = useDispatch()
+  
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -21,6 +28,44 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false }) {
     const words = stripHtml(content).split(' ').length
     const readingTime = Math.ceil(words / 200)
     return readingTime
+  }
+
+  const [isBookmarked, setIsBookmarked] = useState(
+    user?.bookmarks?.includes(blog._id) || false
+  )
+  const [bookmarkLoading, setBookmarkLoading] = useState(false)
+
+  // Update bookmark state when user bookmarks change
+  useEffect(() => {
+    setIsBookmarked(user?.bookmarks?.includes(blog._id) || false)
+  }, [user?.bookmarks, blog._id])
+
+  const handleBookmarkToggle = async (e) => {
+    e.preventDefault() // Prevent navigation when clicking bookmark
+    
+    if (!user) {
+      toast.error("Please login to bookmark blogs")
+      return
+    }
+
+    setBookmarkLoading(true)
+    try {
+      const response = await blogService.toggleBookmark(blog._id)
+      setIsBookmarked(response.isBookmarked)
+      
+      // Update the user's bookmarks in Redux store
+      const updatedBookmarks = response.isBookmarked 
+        ? [...(user.bookmarks || []), blog._id]
+        : (user.bookmarks || []).filter(id => id !== blog._id)
+      
+      dispatch(updateUserBookmarks(updatedBookmarks))
+      toast.success(response.message)
+    } catch (error) {
+      toast.error("Failed to bookmark blog")
+      console.error("Bookmark error:", error)
+    } finally {
+      setBookmarkLoading(false)
+    }
   }
 
   return (
@@ -157,6 +202,20 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false }) {
                 <span className="text-sm">{blog.viewsCount}</span>
               </div>
             )}
+
+            {/* Bookmark Button */}
+            <button
+              onClick={handleBookmarkToggle}
+              disabled={bookmarkLoading}
+              className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded ${
+                isBookmarked 
+                  ? "text-blue-500 hover:text-blue-600" 
+                  : "hover:text-blue-500"
+              } ${bookmarkLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              title={isBookmarked ? "Remove bookmark" : "Bookmark this blog"}
+            >
+              <FiBookmark className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
+            </button>
           </div>
         </div>
       </div>

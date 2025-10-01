@@ -43,6 +43,13 @@ const authSlice = createSlice({
       state.isSuccess = false
       state.message = ""
     },
+    updateUserBookmarks: (state, action) => {
+      if (state.user) {
+        state.user.bookmarks = action.payload
+        // Update localStorage as well
+        localStorage.setItem("user", JSON.stringify(state.user))
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -78,5 +85,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { reset } = authSlice.actions
+export const { reset, updateUserBookmarks } = authSlice.actions
 export default authSlice.reducer

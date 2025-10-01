@@ -11,6 +11,7 @@ function Profile() {
   const { id } = useParams()
   const dispatch = useDispatch()
   const { blogs } = useSelector((state) => state.blog)
+  const { user } = useSelector((state) => state.auth)
 
   const userBlogs = blogs.filter((blog) => blog.author?._id === id)
   const author = userBlogs[0]?.author
@@ -49,7 +50,7 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-theme-bg via-theme-bg-secondary to-theme-bg-tertiary">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <div className="card-modern p-8 mb-8">
@@ -122,7 +123,7 @@ function Profile() {
           {userBlogs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userBlogs.map((blog) => (
-                <BlogCard key={blog._id} blog={blog} />
+                <BlogCard key={blog._id} blog={blog} user={user} />
               ))}
             </div>
           ) : (

@@ -13,6 +13,7 @@ import {
   FiGrid,
   FiFileText,
   FiPlusCircle,
+  FiBookmark,
   FiBookOpen,
   FiPenTool
 } from "react-icons/fi"
@@ -53,6 +54,12 @@ function Sidebar() {
         label: "My Blogs",
         icon: FiFileText,
         path: "/dashboard",
+        roles: ["user", "admin", "superadmin"]
+      },
+      {
+        label: "Bookmarks",
+        icon: FiBookmark,
+        path: "/bookmarks",
         roles: ["user", "admin", "superadmin"]
       }
     ]
