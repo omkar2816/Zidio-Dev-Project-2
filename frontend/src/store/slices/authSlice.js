@@ -43,7 +43,6 @@ const authSlice = createSlice({
       state.isSuccess = false
       state.message = ""
     },
-<<<<<<< HEAD
     updateUserBookmarks: (state, action) => {
       if (state.user) {
         state.user.bookmarks = action.payload
@@ -51,7 +50,6 @@ const authSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(state.user))
       }
     },
-<<<<<<< HEAD
     updateUserProfile: (state, action) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload }
@@ -59,10 +57,6 @@ const authSlice = createSlice({
         localStorage.setItem("user", JSON.stringify(state.user))
       }
     },
-=======
->>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
-=======
->>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
   },
   extraReducers: (builder) => {
     builder
@@ -98,13 +92,5 @@ const authSlice = createSlice({
   },
 })
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 export const { reset, updateUserBookmarks, updateUserProfile } = authSlice.actions
-=======
-export const { reset } = authSlice.actions
->>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
-=======
-export const { reset, updateUserBookmarks } = authSlice.actions
->>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
 export default authSlice.reducer

@@ -30,7 +30,8 @@ export const getBlog = createAsyncThunk("blog/get", async (id, thunkAPI) => {
 
 export const createBlog = createAsyncThunk("blog/create", async (blogData, thunkAPI) => {
   try {
-    return await blogService.createBlog(blogData)
+    const token = thunkAPI.getState().auth.user.token
+    return await blogService.createBlog(blogData, token)
   } catch (error) {
     const message = error.response?.data?.message || error.message
     return thunkAPI.rejectWithValue(message)
@@ -39,7 +40,8 @@ export const createBlog = createAsyncThunk("blog/create", async (blogData, thunk
 
 export const updateBlog = createAsyncThunk("blog/update", async ({ id, blogData }, thunkAPI) => {
   try {
-    return await blogService.updateBlog(id, blogData)
+    const token = thunkAPI.getState().auth.user.token
+    return await blogService.updateBlog(id, blogData, token)
   } catch (error) {
     const message = error.response?.data?.message || error.message
     return thunkAPI.rejectWithValue(message)
@@ -65,6 +67,20 @@ const blogSlice = createSlice({
       state.isError = false
       state.isSuccess = false
       state.message = ""
+    },
+    updateBlogLikes: (state, action) => {
+      const { blogId, likes } = action.payload
+      
+      // Update in blogs array
+      const blogIndex = state.blogs.findIndex(blog => blog._id === blogId)
+      if (blogIndex !== -1) {
+        state.blogs[blogIndex].likes = likes
+      }
+      
+      // Update current blog if it matches
+      if (state.blog && state.blog._id === blogId) {
+        state.blog.likes = likes
+      }
     },
   },
   extraReducers: (builder) => {
@@ -114,5 +130,5 @@ const blogSlice = createSlice({
   },
 })
 
-export const { reset } = blogSlice.actions
+export const { reset, updateBlogLikes } = blogSlice.actions
 export default blogSlice.reducer

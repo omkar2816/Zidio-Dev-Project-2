@@ -1,5 +1,4 @@
 import mongoose from "mongoose"
-import bcrypt from "bcryptjs"
 
 const userSchema = mongoose.Schema(
   {
@@ -37,7 +36,7 @@ const userSchema = mongoose.Schema(
     },
     phone: {
       type: String,
-      maxlength: 15,
+      maxlength: 20,
       default: "",
     },
     website: {
@@ -64,25 +63,45 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
     lastLogin: {
       type: Date,
+      default: null,
+    },
+    blogsCount: {
+      type: Number,
+      default: 0,
+    },
+    totalViews: {
+      type: Number,
+      default: 0,
+    },
+    totalLikes: {
+      type: Number,
+      default: 0,
     },
     adminRequest: {
-      isRequested: {
-        type: Boolean,
-        default: false,
-      },
-      requestDate: {
-        type: Date,
-      },
       status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
-        default: "pending",
+        enum: ["none", "pending", "approved", "rejected"],
+        default: "none"
+      },
+      requestedAt: {
+        type: Date,
+        default: null
+      },
+      reviewedAt: {
+        type: Date,
+        default: null
+      },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+      },
+      reason: {
+        type: String,
+        maxlength: 500,
+        default: ""
       },
       adminMessage: {
         type: String,
@@ -132,44 +151,48 @@ const userSchema = mongoose.Schema(
         },
         likeNotifications: {
           type: Boolean,
-          default: true
+          default: false
         }
       },
       privacy: {
-        profileVisibility: {
-          type: String,
-          enum: ["public", "private", "friends"],
-          default: "public"
+        publicProfile: {
+          type: Boolean,
+          default: true
         },
         showEmail: {
           type: Boolean,
           default: false
         },
-        showPhone: {
+        showOnlineStatus: {
+          type: Boolean,
+          default: true
+        },
+        twoFactorAuth: {
           type: Boolean,
           default: false
         }
       },
-      display: {
-        theme: {
-          type: String,
-          enum: ["light", "dark", "auto"],
-          default: "auto"
-        },
+      preferences: {
         language: {
           type: String,
-          default: "en"
+          default: 'en',
+          enum: ['en', 'es', 'fr', 'de', 'it', 'pt']
         },
         timezone: {
           type: String,
-          default: "UTC"
+          default: 'UTC',
+          enum: ['UTC', 'EST', 'PST', 'GMT', 'CET', 'JST']
+        },
+        autoSave: {
+          type: Boolean,
+          default: true
         },
         compactView: {
           type: Boolean,
           default: false
         }
       }
-    }
+    },
   },
   {
     timestamps: true,
@@ -179,134 +202,98 @@ const userSchema = mongoose.Schema(
 // Method to check if user has permission to manage another user
 userSchema.methods.canManage = function(targetUser) {
   if (this.role === 'superadmin') {
-    return true // Superadmin can manage everyone
+    return targetUser.role !== 'superadmin' || targetUser._id.toString() === this._id.toString()
   }
-  
   if (this.role === 'admin') {
-    return targetUser.role === 'user' // Admin can only manage regular users
-  }
-  
-  return false // Regular users can't manage others
-}
-
-// Method to check if user can perform admin actions
-userSchema.methods.canPerformAdminActions = function() {
-  return this.role === 'admin' || this.role === 'superadmin'
-}
-
-// Method to check if user can perform superadmin actions
-userSchema.methods.canPerformSuperAdminActions = function() {
-  return this.role === 'superadmin'
-}
-
-// Method to get user's full name or display name
-userSchema.methods.getDisplayName = function() {
-  return this.name || this.email.split('@')[0]
-}
-
-// Method to check if user can edit another user's content
-userSchema.methods.canEditContent = function(contentAuthor) {
-  if (this.role === 'superadmin') {
-    return true
-  }
-  
-  if (this.role === 'admin') {
-    return contentAuthor.role === 'user' || this._id.toString() === contentAuthor._id.toString()
-  }
-  
-  return this._id.toString() === contentAuthor._id.toString()
-}
-
-// Method to check if user can delete another user's content
-userSchema.methods.canDeleteContent = function(contentAuthor) {
-  if (this.role === 'superadmin') {
-    return true
-  }
-  
-  if (this.role === 'admin') {
-    return contentAuthor.role === 'user' || this._id.toString() === contentAuthor._id.toString()
-  }
-  
-  return this._id.toString() === contentAuthor._id.toString()
-}
-
-// Method to check if user can view admin panel
-userSchema.methods.canAccessAdminPanel = function() {
-  return this.role === 'admin' || this.role === 'superadmin'
-}
-
-// Method to check if user can view superadmin panel
-userSchema.methods.canAccessSuperAdminPanel = function() {
-  return this.role === 'superadmin'
-}
-
-// Method to get user's role display name
-userSchema.methods.getRoleDisplayName = function() {
-  const roleNames = {
-    user: 'User',
-    admin: 'Administrator',
-    superadmin: 'Super Administrator'
-  }
-  return roleNames[this.role] || 'Unknown'
-}
-
-// Method to toggle bookmark for a blog
-userSchema.methods.toggleBookmark = function(blogId) {
-  const bookmarkIndex = this.bookmarks.indexOf(blogId)
-  
-  if (bookmarkIndex > -1) {
-    // Remove bookmark
-    this.bookmarks.splice(bookmarkIndex, 1)
-    return false // Unbookmarked
-  } else {
-    // Add bookmark
-    this.bookmarks.push(blogId)
-    return true // Bookmarked
-  }
-}
-
-// Method to check if user has bookmarked a blog
-userSchema.methods.hasBookmarked = function(blogId) {
-  return this.bookmarks.includes(blogId)
-}
-
-// Method to follow another user
-userSchema.methods.followUser = function(userId) {
-  if (!this.following.includes(userId)) {
-    this.following.push(userId)
-    return true
+    return targetUser.role === 'user'
   }
   return false
 }
 
-// Method to unfollow another user
-userSchema.methods.unfollowUser = function(userId) {
-  const index = this.following.indexOf(userId)
-  if (index > -1) {
-    this.following.splice(index, 1)
-    return true
+// Method to request admin access
+userSchema.methods.requestAdminAccess = function(reason = "") {
+  if (this.role !== 'user') {
+    throw new Error('Only regular users can request admin access')
   }
+  if (this.adminRequest.status === 'pending') {
+    throw new Error('Admin request is already pending')
+  }
+  if (this.adminRequest.status === 'approved') {
+    throw new Error('User already has approved admin access')
+  }
+  
+  this.adminRequest.status = 'pending'
+  this.adminRequest.requestedAt = new Date()
+  this.adminRequest.reason = reason
+  this.adminRequest.reviewedAt = null
+  this.adminRequest.reviewedBy = null
+  this.adminRequest.adminMessage = ""
+}
+
+// Method to approve admin request
+userSchema.methods.approveAdminRequest = function(superadminId, message = "") {
+  if (this.adminRequest.status !== 'pending') {
+    throw new Error('No pending admin request to approve')
+  }
+  
+  this.role = 'admin'
+  this.adminRequest.status = 'approved'
+  this.adminRequest.reviewedAt = new Date()
+  this.adminRequest.reviewedBy = superadminId
+  this.adminRequest.adminMessage = message
+}
+
+// Method to reject admin request
+userSchema.methods.rejectAdminRequest = function(superadminId, message = "") {
+  if (this.adminRequest.status !== 'pending') {
+    throw new Error('No pending admin request to reject')
+  }
+  
+  this.adminRequest.status = 'rejected'
+  this.adminRequest.reviewedAt = new Date()
+  this.adminRequest.reviewedBy = superadminId
+  this.adminRequest.adminMessage = message
+}
+
+// Method to check if user can login with admin privileges
+userSchema.methods.canLoginAsAdmin = function() {
+  return this.role === 'admin' && this.adminRequest.status === 'approved'
+}
+
+// Method to check if user is authorized for role
+userSchema.methods.isAuthorizedForRole = function() {
+  if (this.role === 'user') return true
+  if (this.role === 'superadmin') return true
+  if (this.role === 'admin') return this.adminRequest.status === 'approved'
   return false
 }
 
-// Method to check if user is following another user
-userSchema.methods.isFollowing = function(userId) {
-  return this.following.includes(userId)
-}
-
-// Encrypt password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next()
+// Method to get user permissions
+userSchema.methods.getPermissions = function() {
+  const permissions = {
+    canCreateBlog: true,
+    canManageOwnBlogs: true,
+    canComment: this.isActive,
+    canLike: this.isActive,
   }
 
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
+  if (this.role === 'admin') {
+    permissions.canManageUsers = true
+    permissions.canViewAnalytics = true
+    permissions.canManageBlogs = true
+    permissions.canViewReports = true
+  }
 
-// Match user entered password to hashed password in database
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
+  if (this.role === 'superadmin') {
+    permissions.canManageUsers = true
+    permissions.canManageAdmins = true
+    permissions.canViewAnalytics = true
+    permissions.canManageBlogs = true
+    permissions.canViewReports = true
+    permissions.canManageSystem = true
+  }
+
+  return permissions
 }
 
 export default mongoose.model("User", userSchema)

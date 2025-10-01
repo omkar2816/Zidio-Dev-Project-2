@@ -159,9 +159,7 @@ export const uploadImageFile = async (file, token = null) => {
   console.log('Uploading file:', file.name)
   console.log('Token present:', !!authToken)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-
-  const response = await fetch(`${API_URL}/upload/image`, {
+  const response = await fetch('http://localhost:5000/api/upload/image', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${authToken}`
@@ -184,22 +182,5 @@ export const uploadImageFile = async (file, token = null) => {
 
   const result = await response.json()
   console.log('Upload success:', result)
-  console.log('Image URL returned:', result.imageUrl)
-  console.log('Testing image URL accessibility...')
-  
-  // Test if the image URL is accessible
-  fetch(result.imageUrl)
-    .then(res => {
-      console.log('Image URL test response:', res.status)
-      if (!res.ok) {
-        console.error('Image URL not accessible:', res.status, res.statusText)
-      } else {
-        console.log('Image URL is accessible')
-      }
-    })
-    .catch(err => {
-      console.error('Error testing image URL:', err)
-    })
-  
   return result.imageUrl
 }

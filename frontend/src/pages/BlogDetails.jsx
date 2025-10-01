@@ -1,20 +1,14 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
-import { getBlog, deleteBlog } from "../store/slices/blogSlice"
+import { getBlog, deleteBlog, updateBlogLikes } from "../store/slices/blogSlice"
 import { useTheme } from "../contexts/ThemeContext"
 import blogService from "../services/blogService"
 import toast from "react-hot-toast"
 import { FiHeart, FiEdit, FiTrash2, FiUser, FiCalendar, FiClock, FiEye, FiShare2, FiCheck, FiX } from "react-icons/fi"
-<<<<<<< HEAD
 import ShareButton from "../components/ShareButton"
 import BookmarkButton from "../components/BookmarkButton"
-<<<<<<< HEAD
 import { isValidImageUrl, convertGooglePhotosUrl } from "../utils/imageUtils"
-=======
->>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
-=======
->>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
 
 function BlogDetails() {
   const { id } = useParams()
@@ -30,14 +24,8 @@ function BlogDetails() {
   const [comments, setComments] = useState([])
   const [editingCommentId, setEditingCommentId] = useState(null)
   const [editingCommentText, setEditingCommentText] = useState("")
-<<<<<<< HEAD
   const [isBookmarked, setIsBookmarked] = useState(false)
-<<<<<<< HEAD
   const [imageError, setImageError] = useState(false)
-=======
->>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
-=======
->>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
 
   useEffect(() => {
     dispatch(getBlog(id))
@@ -48,25 +36,21 @@ function BlogDetails() {
       setLikesCount(blog.likes?.length || 0)
       setLiked(blog.likes?.includes(user?._id))
       setComments(blog.comments || [])
+      // Check if blog is bookmarked by current user
+      setIsBookmarked(user?.bookmarks?.includes(blog._id) || false)
     }
   }, [blog, user])
 
-<<<<<<< HEAD
   // Additional useEffect to sync bookmark state when user bookmarks change
   useEffect(() => {
     setIsBookmarked(user?.bookmarks?.includes(blog?._id) || false)
   }, [user?.bookmarks, blog?._id])
 
-<<<<<<< HEAD
   // Reset image error when blog changes
   useEffect(() => {
     setImageError(false)
   }, [blog?.image])
 
-=======
->>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
-=======
->>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
   const handleLike = async () => {
     if (!user) {
       toast.error("Please login to like")
@@ -74,13 +58,29 @@ function BlogDetails() {
     }
 
     try {
-      await blogService.likeBlog(id, user.token)
-      setLiked(!liked)
-      setLikesCount(liked ? likesCount - 1 : likesCount + 1)
-      toast.success(liked ? "Unliked" : "Liked!")
+      const updatedBlog = await blogService.likeBlog(id, user.token)
+      
+      // Update Redux store with new like data
+      dispatch(updateBlogLikes({
+        blogId: id,
+        likes: updatedBlog.likes
+      }))
+      
+      // Check if user liked or unliked
+      const isNowLiked = updatedBlog.likes.includes(user._id)
+      
+      // Update local state
+      setLiked(isNowLiked)
+      setLikesCount(updatedBlog.likes.length)
+      
+      toast.success(isNowLiked ? "Liked!" : "Unliked")
     } catch (error) {
       toast.error("Failed to like blog")
     }
+  }
+
+  const handleImageError = () => {
+    setImageError(true)
   }
 
   const handleComment = async (e) => {
@@ -184,23 +184,37 @@ function BlogDetails() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-theme-bg transition-colors duration-300">
+    <div className="min-h-screen">
       {/* Background Pattern */}
       <div className="fixed inset-0 pattern-dots opacity-10 pointer-events-none"></div>
       
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <article className="card-modern overflow-hidden">
           {/* Hero Image */}
-          {blog.image && (
+          {blog.image && isValidImageUrl(blog.image) && !imageError ? (
             <div className="relative h-96 overflow-hidden">
               <img 
-                src={blog.image || "/placeholder.svg"} 
+                src={convertGooglePhotosUrl(blog.image)} 
                 alt={blog.title} 
                 className="w-full h-full object-cover"
+                crossOrigin="anonymous"
+                onError={handleImageError}
+                onLoad={() => setImageError(false)}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
             </div>
-          )}
+          ) : blog.image ? (
+            <div className="relative h-96 bg-gradient-to-br from-primary-500/20 to-secondary-500/20 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl gradient-text font-display font-bold mb-4">
+                  {blog.title.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-theme-text-secondary">
+                  {!isValidImageUrl(blog.image) ? 'Invalid image URL' : 'Image failed to load'}
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <div className="p-8 space-y-6">
             {/* Header */}
@@ -299,10 +313,13 @@ function BlogDetails() {
                     <span className="font-medium">{likesCount}</span>
                   </button>
                   
-                  <button className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-theme-bg-secondary text-theme-text-secondary hover:text-theme-text transition-colors duration-200">
-                    <FiShare2 className="w-4 h-4" />
-                    <span className="font-medium">Share</span>
-                  </button>
+                  <BookmarkButton 
+                    blog={blog} 
+                    user={user} 
+                    isBookmarked={isBookmarked}
+                  />
+                  
+                  <ShareButton blog={blog} />
                 </div>
               </div>
             </div>

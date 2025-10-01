@@ -118,23 +118,37 @@ router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
 })
 
 // @desc    Test upload endpoint (for debugging)
-// @route   GET /api/upload/test
-// @access  Private
-router.get('/test', protect, (req, res) => {
-  res.json({
-    message: 'Upload routes are working',
-    user: req.user.name,
-    uploadsDir: uploadsDir
-  })
+// @route   POST /api/upload/test
+// @access  Public
+router.post('/test', upload.single('image'), (req, res) => {
+  try {
+    console.log('Test upload request received')
+    console.log('File:', req.file ? req.file.filename : 'No file')
+    
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' })
+    }
+
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/images/${req.file.filename}`
+
+    res.json({
+      message: 'Test upload successful',
+      imageUrl: imageUrl,
+      filename: req.file.filename
+    })
+  } catch (error) {
+    console.error('Test upload error:', error)
+    res.status(500).json({ message: 'Failed to upload test image' })
+  }
 })
 
-// Error handling middleware for multer
+// Handle multer errors
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' })
+      return res.status(400).json({ message: 'File size too large. Maximum size is 5MB.' })
     }
-    return res.status(400).json({ message: 'File upload error: ' + error.message })
+    return res.status(400).json({ message: error.message })
   }
   
   if (error.message.includes('Invalid file type')) {
