@@ -75,7 +75,7 @@ function Dashboard() {
       ) : userBlogs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
           {userBlogs.map((blog) => (
-            <BlogCard key={blog._id} blog={blog} user={user} />
+            <BlogCard key={blog._id} blog={blog} />
           ))}
         </div>
       ) : (

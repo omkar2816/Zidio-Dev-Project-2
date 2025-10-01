@@ -13,7 +13,6 @@ import {
   FiGrid,
   FiFileText,
   FiPlusCircle,
-  FiBookmark,
   FiBookOpen,
   FiPenTool
 } from "react-icons/fi"
@@ -60,12 +59,15 @@ function Sidebar() {
         label: "My Blogs",
         icon: FiFileText,
         path: "/dashboard",
+<<<<<<< HEAD
         roles: ["admin", "superadmin"]
       },
       {
         label: "Bookmarks",
         icon: FiBookmark,
         path: "/bookmarks",
+=======
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
         roles: ["user", "admin", "superadmin"]
       }
     ]

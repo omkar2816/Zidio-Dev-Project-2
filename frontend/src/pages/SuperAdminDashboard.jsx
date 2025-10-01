@@ -178,11 +178,11 @@ function SuperAdminDashboard() {
 
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-theme-bg transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-red-600 bg-clip-text text-transparent mb-2">
             Super Admin Dashboard
           </h1>
           <p className="text-theme-text-secondary">

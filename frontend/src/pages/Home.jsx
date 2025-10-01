@@ -174,7 +174,6 @@ function Home() {
                     >
                       <BlogCard 
                         blog={blog} 
-                        user={user}
                         searchTerms={currentSearchTerms}
                         showRelevanceScore={currentSearchTerms.length > 0}
                       />

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { FiHeart, FiMessageCircle, FiUser, FiCalendar, FiClock, FiEye, FiBookmark, FiSearch } from "react-icons/fi"
 import { highlightSearchTerms } from "../services/synonymService"
+<<<<<<< HEAD
 import { useState, useEffect } from "react"
 import { useDispatch } from "react-redux"
 import { updateUserBookmarks } from "../store/slices/authSlice"
@@ -9,10 +10,10 @@ import blogService from "../services/blogService"
 import toast from "react-hot-toast"
 import { isValidImageUrl, convertGooglePhotosUrl } from "../utils/imageUtils"
 import Avatar from "./Avatar"
+=======
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
 
-function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = null }) {
-  const dispatch = useDispatch()
-  
+function BlogCard({ blog, searchTerms = [], showRelevanceScore = false }) {
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -33,6 +34,7 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = n
     return readingTime
   }
 
+<<<<<<< HEAD
   const [isBookmarked, setIsBookmarked] = useState(
     user?.bookmarks?.includes(blog._id) || false
   )
@@ -132,6 +134,8 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = n
     return convertGooglePhotosUrl(url)
   }
 
+=======
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
   return (
     <article className="group card-modern card-hover overflow-hidden animate-fade-in">
       {/* Image Container */}
@@ -278,6 +282,7 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = n
                 <FiMessageCircle className="w-4 h-4" />
                 <span className="text-sm">{blog.commentsCount || blog.comments?.length || 0}</span>
               </div>
+<<<<<<< HEAD
               
               <div className="flex items-center space-x-1">
                 <FiClock className="w-4 h-4" />
@@ -307,6 +312,9 @@ function BlogCard({ blog, searchTerms = [], showRelevanceScore = false, user = n
                 <FiBookmark className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
               </button>
             </div>
+=======
+            )}
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
           </div>
         </div>
       </div>

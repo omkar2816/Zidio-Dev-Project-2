@@ -35,16 +35,6 @@ const addComment = async (id, commentData) => {
   return response.data
 }
 
-const toggleBookmark = async (id) => {
-  const response = await api.put(`/blogs/${id}/bookmark`)
-  return response.data
-}
-
-const getBookmarkedBlogs = async () => {
-  const response = await api.get("/blogs/bookmarks")
-  return response.data
-}
-
 const blogService = {
   getBlogs,
   getBlog,
@@ -53,8 +43,6 @@ const blogService = {
   deleteBlog,
   likeBlog,
   addComment,
-  toggleBookmark,
-  getBookmarkedBlogs,
 }
 
 export default blogService

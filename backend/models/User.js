@@ -109,6 +109,7 @@ const userSchema = mongoose.Schema(
         default: ""
       }
     },
+<<<<<<< HEAD
     bookmarks: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -193,6 +194,8 @@ const userSchema = mongoose.Schema(
         }
       }
     },
+=======
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
   },
   {
     timestamps: true,

@@ -26,6 +26,7 @@ import { updateUserProfile } from '../store/slices/authSlice'
 function Profile() {
   const { id } = useParams()
   const dispatch = useDispatch()
+<<<<<<< HEAD
   const { user } = useSelector((state) => state.auth)
   
   const [profileUser, setProfileUser] = useState(null)
@@ -51,6 +52,9 @@ function Profile() {
     github: '',
     twitter: ''
   })
+=======
+  const { blogs } = useSelector((state) => state.blog)
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
 
   const [avatarFile, setAvatarFile] = useState(null)
   const fileInputRef = useRef(null)
@@ -218,6 +222,7 @@ function Profile() {
   }
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {profileLoading ? (
@@ -238,6 +243,16 @@ function Profile() {
                   : `View ${profileUser?.name}'s profile and blog posts`
                 }
               </p>
+=======
+    <div className="min-h-screen bg-gradient-to-br from-theme-bg via-theme-bg-secondary to-theme-bg-tertiary">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Header */}
+        <div className="card-modern p-8 mb-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+            {/* Avatar */}
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br ${getAvatarColor(author?.name)} flex items-center justify-center text-white text-2xl md:text-4xl font-bold shadow-xl`}>
+              {getUserInitials(author?.name)}
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
             </div>
 
             {/* Profile Card */}
@@ -647,7 +662,63 @@ function Profile() {
               )}
             </div>
           </div>
+<<<<<<< HEAD
         )}
+=======
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-6 border-t border-theme-border">
+            <div className="text-center p-6 bg-gradient-to-r from-blue-500/10 to-blue-600/10 rounded-xl border border-blue-500/20">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <FiMail className="text-white text-xl" />
+              </div>
+              <p className="text-3xl font-bold text-theme-text mb-1">{userBlogs.length}</p>
+              <p className="text-theme-text-secondary">Total Blogs</p>
+            </div>
+
+            <div className="text-center p-6 bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-xl border border-green-500/20">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <FiMail className="text-white text-xl" />
+              </div>
+              <p className="text-3xl font-bold text-theme-text mb-1">
+                {userBlogs.reduce((acc, blog) => acc + (blog.likes?.length || 0), 0)}
+              </p>
+              <p className="text-theme-text-secondary">Total Likes</p>
+            </div>
+
+            <div className="text-center p-6 bg-gradient-to-r from-purple-500/10 to-purple-600/10 rounded-xl border border-purple-500/20">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <FiMail className="text-white text-xl" />
+              </div>
+              <p className="text-3xl font-bold text-theme-text mb-1">
+                {userBlogs.reduce((acc, blog) => acc + (blog.comments?.length || 0), 0)}
+              </p>
+              <p className="text-theme-text-secondary">Total Comments</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Published Blogs Section */}
+        <div>
+          <h2 className="text-2xl font-bold text-theme-text mb-6">Published Blogs</h2>
+
+          {userBlogs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userBlogs.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
+              ))}
+            </div>
+          ) : (
+            <div className="card-modern p-20 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <FiMail className="text-white text-2xl" />
+              </div>
+              <h3 className="text-xl font-semibold text-theme-text mb-2">No Blogs Yet</h3>
+              <p className="text-theme-text-secondary">This user hasn't published any blogs yet.</p>
+            </div>
+          )}
+        </div>
+>>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
       </div>
     </div>
   )
