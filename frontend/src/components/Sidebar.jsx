@@ -44,12 +44,6 @@ function Sidebar() {
         roles: ["user", "admin", "superadmin"]
       },
       {
-        label: "Dashboard", 
-        icon: FiGrid,
-        path: "/dashboard",
-        roles: ["user"]
-      },
-      {
         label: "Create Blog",
         icon: FiPlusCircle,
         path: "/create", 
@@ -60,7 +54,11 @@ function Sidebar() {
         icon: FiFileText,
         path: "/dashboard",
 <<<<<<< HEAD
+<<<<<<< HEAD
         roles: ["admin", "superadmin"]
+=======
+        roles: ["user", "admin", "superadmin"]
+>>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
       },
       {
         label: "Bookmarks",
@@ -74,7 +72,14 @@ function Sidebar() {
 
     // Role-specific items
     const roleItems = {
-      user: [],
+      user: [
+        {
+          label: "Dashboard", 
+          icon: FiGrid,
+          path: "/dashboard",
+          roles: ["user"]
+        }
+      ],
       admin: [
         {
           label: "Admin Dashboard",
@@ -102,6 +107,12 @@ function Sidebar() {
     const userRoleItems = roleItems[user?.role] || []
     
     const endItems = [
+      {
+        label: "Profile",
+        icon: FiUser,
+        path: "/profile",
+        roles: ["user", "admin", "superadmin"]
+      },
       {
         label: "Settings",
         icon: FiSettings,

@@ -67,7 +67,7 @@ export const getBlogs = asyncHandler(async (req, res) => {
 
   try {
     let blogs = await Blog.find(query)
-      .populate("author", "name email avatar")
+      .populate("author", "name email")
       .sort(sortCriteria)
       .lean()
 
@@ -134,7 +134,7 @@ export const getBlogs = asyncHandler(async (req, res) => {
 // @route   GET /api/blogs/:id
 // @access  Public
 export const getBlog = asyncHandler(async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate("author", "name email avatar").populate("comments.user", "name")
+  const blog = await Blog.findById(req.params.id).populate("author", "name email").populate("comments.user", "name")
 
   if (blog) {
     res.json(blog)
@@ -164,7 +164,7 @@ export const createBlog = asyncHandler(async (req, res) => {
     author: req.user._id,
   })
 
-  const populatedBlog = await Blog.findById(blog._id).populate("author", "name email avatar")
+  const populatedBlog = await Blog.findById(blog._id).populate("author", "name email")
 
   res.status(201).json(populatedBlog)
 })
@@ -188,7 +188,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
 
   const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
-  }).populate("author", "name email avatar")
+  }).populate("author", "name email")
 
   res.json(updatedBlog)
 })

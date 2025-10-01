@@ -29,36 +29,6 @@ const userSchema = mongoose.Schema(
       maxlength: 500,
       default: "",
     },
-    location: {
-      type: String,
-      maxlength: 100,
-      default: "",
-    },
-    phone: {
-      type: String,
-      maxlength: 20,
-      default: "",
-    },
-    website: {
-      type: String,
-      maxlength: 200,
-      default: "",
-    },
-    linkedin: {
-      type: String,
-      maxlength: 200,
-      default: "",
-    },
-    github: {
-      type: String,
-      maxlength: 200,
-      default: "",
-    },
-    twitter: {
-      type: String,
-      maxlength: 200,
-      default: "",
-    },
     isActive: {
       type: Boolean,
       default: true,
@@ -116,6 +86,7 @@ const userSchema = mongoose.Schema(
         ref: "Blog"
       }
     ],
+<<<<<<< HEAD
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -196,6 +167,8 @@ const userSchema = mongoose.Schema(
     },
 =======
 >>>>>>> parent of 11f81ed (Integrated Bookmark and Share link feature)
+=======
+>>>>>>> parent of 516801f (User profile update; Settings page working; Website working as per requirements)
   },
   {
     timestamps: true,
