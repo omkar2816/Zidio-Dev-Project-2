@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <defs>
+    <linearGradient id="faviconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0072ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="8" cy="8" r="7.5" fill="url(#faviconGradient)"/>
+  
+  <!-- Simplified document -->
+  <rect x="4.5" y="3.5" width="6" height="8" rx="0.8" fill="white" opacity="0.95"/>
+  
+  <!-- Title line -->
+  <rect x="5.5" y="5" width="4" height="0.8" rx="0.4" fill="url(#faviconGradient)"/>
+  
+  <!-- Content lines -->
+  <rect x="5.5" y="6.5" width="3" height="0.4" rx="0.2" fill="#333" opacity="0.6"/>
+  <rect x="5.5" y="7.5" width="3.5" height="0.4" rx="0.2" fill="#333" opacity="0.6"/>
+  <rect x="5.5" y="8.5" width="2.5" height="0.4" rx="0.2" fill="#333" opacity="0.6"/>
+  
+  <!-- Simplified pen -->
+  <g transform="translate(9.5, 9.5) rotate(45)">
+    <rect x="-0.3" y="-2" width="0.6" height="3" rx="0.3" fill="url(#faviconGradient)"/>
+    <circle cx="0" cy="1.2" r="0.4" fill="#0072ff"/>
+  </g>
+</svg>
