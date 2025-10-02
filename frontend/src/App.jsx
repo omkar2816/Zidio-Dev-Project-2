@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { useEffect } from "react"
 import { maintainSession } from "./store/slices/authSlice"
+import { useSessionManager } from "./hooks/useSessionManager"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { SidebarProvider } from "./contexts/SidebarContext"
 import LenisProvider from "./components/LenisProvider"
@@ -24,6 +25,9 @@ import Bookmarks from "./pages/Bookmarks"
 function App() {
   const { user } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
+  
+  // Initialize session manager for authenticated users
+  const sessionManager = useSessionManager()
 
   // Maintain session during normal app usage (not page refresh)
   useEffect(() => {
@@ -35,6 +39,8 @@ function App() {
       const handleUserActivity = () => {
         if (user) {
           dispatch(maintainSession())
+          // Update session manager activity as well
+          sessionManager.updateActivity()
         }
       }
 
@@ -51,7 +57,7 @@ function App() {
         })
       }
     }
-  }, [user, dispatch])
+  }, [user, dispatch, sessionManager])
 
   return (
     <LenisProvider>

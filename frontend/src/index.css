@@ -5,21 +5,25 @@
 
 /* CSS Custom Properties for Theming */
 :root {
-  --color-bg: 255 255 255;
-  --color-bg-secondary: 248 250 252;
-  --color-bg-tertiary: 241 245 249;
-  --color-text: 15 23 42;
-  --color-text-secondary: 71 85 105;
-  --color-border: 226 232 240;
+  /* Updated to match new light theme colors */
+  --color-bg: 249 250 251;        /* light.background #F9FAFB */
+  --color-bg-secondary: 255 255 255;  /* light.card #FFFFFF */
+  --color-bg-tertiary: 229 231 235;   /* light.border #E5E7EB */
+  --color-text: 31 41 55;         /* light.text #1F2937 */
+  --color-text-secondary: 107 114 128; /* slightly lighter gray */
+  --color-border: 229 231 235;    /* light.border #E5E7EB */
+  --color-accent: 37 99 235;      /* light.accent #2563EB */
 }
 
 .dark {
-  --color-bg: 15 23 42;
-  --color-bg-secondary: 30 41 59;
-  --color-bg-tertiary: 51 65 85;
-  --color-text: 248 250 252;
-  --color-text-secondary: 203 213 225;
-  --color-border: 71 85 105;
+  /* Updated to match new dark theme colors */
+  --color-bg: 15 23 42;           /* dark.background #0F172A */
+  --color-bg-secondary: 30 41 59; /* dark.card #1E293B */
+  --color-bg-tertiary: 51 65 85;  /* dark.border #334155 */
+  --color-text: 248 250 252;      /* dark.text #F8FAFC */
+  --color-text-secondary: 203 213 225; /* slightly muted */
+  --color-border: 51 65 85;       /* dark.border #334155 */
+  --color-accent: 56 189 248;     /* dark.accent #38BDF8 */
 }
 
 * {

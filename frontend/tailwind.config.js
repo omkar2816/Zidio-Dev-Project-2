@@ -5,6 +5,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        // New color scheme with light/dark variants
+        light: {
+          background: "#F9FAFB",   // soft white/gray
+          card: "#FFFFFF",        // pure white card
+          text: "#1F2937",        // dark gray text
+          accent: "#2563EB",      // blue accents
+          border: "#E5E7EB",      // light border
+        },
+        dark: {
+          background: "#0F172A",  // deep navy/black
+          card: "#1E293B",        // dark slate card
+          text: "#F8FAFC",        // near white text
+          accent: "#38BDF8",      // cyan accent
+          border: "#334155",      // subtle border
+        },
+        // Keep existing primary/secondary/accent for backward compatibility
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
@@ -41,7 +57,7 @@ export default {
           800: '#991b1b',
           900: '#7f1d1d',
         },
-        // Custom colors using CSS variables for dynamic theming
+        // Custom colors using CSS variables for dynamic theming (keep for compatibility)
         'theme-bg': 'rgb(var(--color-bg) / <alpha-value>)',
         'theme-bg-secondary': 'rgb(var(--color-bg-secondary) / <alpha-value>)',
         'theme-bg-tertiary': 'rgb(var(--color-bg-tertiary) / <alpha-value>)',
@@ -90,6 +106,7 @@ export default {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         'medium': '0 4px 25px -2px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
         'large': '0 10px 40px -4px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'card': '0 4px 12px rgba(0,0,0,0.1)',
       },
     },
   },

@@ -3,11 +3,37 @@ import bcrypt from "bcryptjs"
 import asyncHandler from "express-async-handler"
 import User from "../models/User.js"
 
-// Generate JWT
-const generateToken = (id) => {
+// Generate Access Token (temporarily longer for debugging)
+const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
+    expiresIn: "2h", // Temporarily increased from 15m to 2h for debugging
   })
+}
+
+// Generate Refresh Token (long-lived)
+const generateRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
+    expiresIn: "7d", // 7 days for refresh token
+  })
+}
+
+// Generate both tokens
+const generateTokens = (id) => {
+  return {
+    accessToken: generateAccessToken(id),
+    refreshToken: generateRefreshToken(id)
+  }
+}
+
+// Set secure cookie options
+const getCookieOptions = () => {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/'
+  }
 }
 
 // @desc    Register new user
@@ -70,13 +96,18 @@ export const registerUser = asyncHandler(async (req, res) => {
     }
 
     if (user) {
+      const tokens = generateTokens(user._id)
+      
+      // Set refresh token as httpOnly cookie
+      res.cookie('refreshToken', tokens.refreshToken, getCookieOptions())
+      
       res.status(201).json({
         _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         adminRequest: user.adminRequest,
-        token: generateToken(user._id),
+        token: tokens.accessToken,
         message: requestAdminAccess ? 
           "Account created successfully. Your admin access request has been submitted for review." :
           "Account created successfully."
@@ -124,16 +155,118 @@ export const loginUser = asyncHandler(async (req, res) => {
     user.lastLogin = new Date()
     await user.save()
 
+    const tokens = generateTokens(user._id)
+    
+    // Set refresh token as httpOnly cookie
+    res.cookie('refreshToken', tokens.refreshToken, getCookieOptions())
+
     res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       adminRequest: user.adminRequest,
-      token: generateToken(user._id),
+      token: tokens.accessToken,
     })
   } else {
     res.status(400)
     throw new Error("Invalid credentials")
   }
+})
+
+// @desc    Refresh access token
+// @route   POST /api/auth/refresh
+// @access  Private (requires refresh token in cookie)
+export const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.cookies
+  
+  console.log('🔄 Refresh token request received')
+  console.log('🍪 Cookies:', req.cookies)
+  console.log('🎫 Refresh token exists:', !!refreshToken)
+
+  if (!refreshToken) {
+    console.log('❌ No refresh token provided')
+    res.status(401)
+    throw new Error("No refresh token provided")
+  }
+
+  try {
+    // Verify refresh token
+    console.log('🔍 Verifying refresh token...')
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET)
+    console.log('✅ Refresh token verified for user:', decoded.id)
+    
+    // Get user from token
+    const user = await User.findById(decoded.id).select("-password")
+    
+    if (!user) {
+      console.log('❌ User not found for ID:', decoded.id)
+      res.status(401)
+      throw new Error("User not found")
+    }
+
+    if (!user.isActive) {
+      console.log('❌ User account is inactive:', user.email)
+      res.status(401)
+      throw new Error("Account is inactive")
+    }
+
+    console.log('✅ Generating new tokens for user:', user.email)
+    
+    // Generate new tokens
+    const tokens = generateTokens(user._id)
+    
+    // Set new refresh token as httpOnly cookie
+    res.cookie('refreshToken', tokens.refreshToken, getCookieOptions())
+
+    console.log('✅ New tokens generated and sent')
+
+    res.json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      adminRequest: user.adminRequest,
+      token: tokens.accessToken,
+    })
+  } catch (error) {
+    console.log('❌ Refresh token error:', error.message)
+    // Clear invalid refresh token
+    res.clearCookie('refreshToken')
+    res.status(401)
+    throw new Error("Invalid refresh token")
+  }
+})
+
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+export const logoutUser = asyncHandler(async (req, res) => {
+  // Clear refresh token cookie
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/'
+  })
+
+  res.json({ message: "Logged out successfully" })
+})
+
+// @desc    Validate current session
+// @route   GET /api/auth/validate
+// @access  Private
+export const validateSession = asyncHandler(async (req, res) => {
+  // This endpoint is protected by the auth middleware
+  // If we reach here, the token is valid
+  res.json({
+    valid: true,
+    user: {
+      _id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      adminRequest: req.user.adminRequest,
+    }
+  })
 })
