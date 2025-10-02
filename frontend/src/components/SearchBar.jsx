@@ -51,7 +51,7 @@ function SearchBar({ onSearch, onFilter }) {
     "Meditation & Mindfulness",
     "Motivation & Self-Improvement",
     "Relationships & Lifestyle Balance"
-  ]
+  ] 
 
   const sortOptions = [
     { value: "createdAt", label: "Latest First", icon: FiCalendar },
