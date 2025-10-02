@@ -294,6 +294,60 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Enhanced Profile Dropdown Animation */
+.animate-dropdown-in {
+  animation: dropdown-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes dropdown-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-15px) rotateX(-10deg);
+    filter: blur(2px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.98) translateY(-5px) rotateX(-2deg);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateX(0deg);
+    filter: blur(0px);
+  }
+}
+
+/* Profile Button Hover Effects */
+.profile-button-hover {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.profile-button-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+/* Menu Item Hover Effects */
+.menu-item-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.menu-item-hover:hover::before {
+  left: 100%;
+}
+
 /* Blog content styles */
 .blog-content {
   line-height: 1.7;
