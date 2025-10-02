@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
+import { useEffect } from "react"
+import { maintainSession } from "./store/slices/authSlice"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import { SidebarProvider } from "./contexts/SidebarContext"
 import LenisProvider from "./components/LenisProvider"
@@ -21,6 +23,35 @@ import Bookmarks from "./pages/Bookmarks"
 
 function App() {
   const { user } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
+  // Maintain session during normal app usage (not page refresh)
+  useEffect(() => {
+    if (user) {
+      // Maintain session flag for authenticated users during navigation
+      dispatch(maintainSession())
+      
+      // Set up activity listeners to maintain session during user interaction
+      const handleUserActivity = () => {
+        if (user) {
+          dispatch(maintainSession())
+        }
+      }
+
+      // Listen for user interactions to maintain session
+      const events = ['click', 'scroll', 'keypress', 'mousemove']
+      events.forEach(event => {
+        document.addEventListener(event, handleUserActivity, { passive: true })
+      })
+
+      // Cleanup listeners
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, handleUserActivity)
+        })
+      }
+    }
+  }, [user, dispatch])
 
   return (
     <LenisProvider>
