@@ -7,8 +7,6 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Latest-green.svg)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Latest-green.svg)](https://mongodb.com/)
 
-[![Watch the video]](https://youtu.be/e_Shxa43me8)
-
 ## 🌟 Key Features
 
 ### ✨ User Experience
