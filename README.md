@@ -7,6 +7,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Latest-green.svg)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Latest-green.svg)](https://mongodb.com/)
 
+## Project Preview Video
 [![Thumbnail](https://github.com/user-attachments/assets/c17f5876-42b1-419b-ba6d-b61fc80f4392)](https://github.com/user-attachments/assets/a8795592-544a-4b74-82f3-a0bc0b33db41)
 
 ## 🌟 Key Features
